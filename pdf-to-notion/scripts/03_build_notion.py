@@ -164,6 +164,17 @@ def block_from_spec(spec: dict) -> dict | None:
             "type": "equation",
             "equation": {"expression": spec.get("expression", "")},
         }
+    if t == "toggle":
+        # 접이식 토글. children 에 하위 블록 spec 배열(원문 전체 번역 등)을 넣는다.
+        return {
+            "object": "block",
+            "type": "toggle",
+            "toggle": {
+                "rich_text": to_rich_text(spec.get("text", "원문 번역")),
+                "color": spec.get("color", "default"),
+                "children": flatten_specs(spec.get("children", [])),
+            },
+        }
     return None
 
 
@@ -187,9 +198,15 @@ def build_section_blocks(
     section_title: str,
     image_url: str | None,
     explanation_blocks: list[dict],
+    translation_blocks: list[dict] | None = None,
+    translation_title: str = "📖 원문 전체 번역 (English → 한국어)",
 ) -> list[dict]:
     """한 페이지(=섹션) 블록 시퀀스 만들기.
-    [H2(파란 배경), column_list(image|explanation), divider]
+    [H2(파란 배경), column_list(image|explanation), (선택)toggle(원문 번역), divider]
+
+    번역 토글은 column 안이 아니라 **column_list 와 형제(full-width)** 로 둔다.
+    노션 API는 한 요청에서 중첩을 2단계까지만 허용하는데, column_list→column→블록
+    이 이미 2단계라 토글을 column 안에 넣으면 toggle→children 이 3단계가 돼 거부된다.
     """
     h2 = {
         "object": "block",
@@ -243,15 +260,58 @@ def build_section_blocks(
     }
 
     divider = {"object": "block", "type": "divider", "divider": {}}
-    return [h2, column_list, divider]
+
+    section = [h2, column_list]
+    if translation_blocks:
+        section.append({
+            "object": "block",
+            "type": "toggle",
+            "toggle": {
+                "rich_text": to_rich_text(translation_title),
+                "color": "default",
+                "children": translation_blocks,
+            },
+        })
+    section.append(divider)
+    return section
 
 
-def chunked_append(page_id: str, blocks: list[dict], chunk: int = 50) -> None:
-    """노션 100블록 제한 안전하게 분할 append.
-    column_list 안의 children도 함께 계산되므로 보수적으로 50개씩."""
-    for i in range(0, len(blocks), chunk):
-        notion.blocks.children.append(block_id=page_id, children=blocks[i:i + chunk])
-        time.sleep(0.34)  # rate limit
+def desurrogate(obj):
+    """깨진 lone surrogate(U+D800–DFFF) 문자 제거 → UTF-8/JSON 인코딩 에러 방지.
+    OCR·LLM 산출물에 가끔 섞이며, 노션 API가 '400 no low surrogate' 로 거부한다."""
+    if isinstance(obj, str):
+        return "".join(c for c in obj if not (0xD800 <= ord(c) <= 0xDFFF))
+    if isinstance(obj, list):
+        return [desurrogate(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: desurrogate(v) for k, v in obj.items()}
+    return obj
+
+
+def _count_blocks(b: dict) -> int:
+    """블록 + 모든 중첩 children 재귀 카운트 (노션 100블록/요청 한계 계산용)."""
+    n = 1
+    t = b.get("type")
+    for k in (b.get(t, {}).get("children") or []):
+        n += _count_blocks(k)
+    return n
+
+
+def chunked_append(page_id: str, blocks: list[dict], limit: int = 85) -> None:
+    """노션 100블록/요청 제한을 중첩 children 까지 세어 안전 분할 append.
+    column_list·toggle 등 top-level 블록 경계에서만 자르고, 누적 블록수 ≤ limit."""
+    cur, cur_n = [], 0
+    for b in blocks:
+        bn = _count_blocks(b)
+        if cur and cur_n + bn > limit:
+            notion.blocks.children.append(block_id=page_id, children=desurrogate(cur))
+            time.sleep(0.36)  # rate limit (3 req/s)
+            cur, cur_n = [], 0
+        cur.append(b)
+        cur_n += bn
+    if cur:
+        notion.blocks.children.append(block_id=page_id, children=desurrogate(cur))
+        time.sleep(0.36)
 
 
 # ───────────────────────────────────────────────────────────
@@ -293,6 +353,7 @@ def main():
 
         # 페이지별 섹션
         explanations = expls.get(slug, {}).get("page_explanations", {})
+        translations = expls.get(slug, {}).get("page_translations", {})  # (선택) 원문 번역
         section_titles = expls.get(slug, {}).get("section_titles", {})
         urls = drive.get(slug, {})  # {"p001": "https://lh3...", ...}
 
@@ -304,10 +365,13 @@ def main():
             image_url = urls.get(img_key)
             expl_specs = explanations.get(str(page_num), [])
             expl_blocks = flatten_specs(expl_specs)
-            section_blocks = build_section_blocks(section_title, image_url, expl_blocks)
+            trans_specs = translations.get(str(page_num), [])
+            trans_blocks = flatten_specs(trans_specs) if trans_specs else None
+            section_blocks = build_section_blocks(
+                section_title, image_url, expl_blocks, trans_blocks)
             all_blocks.extend(section_blocks)
 
-        chunked_append(page_id, all_blocks, chunk=30)
+        chunked_append(page_id, all_blocks)
         print(f"   페이지 {info['n_pages']}개 섹션 추가 완료 → {page['url']}")
 
     NOTION_PAGE_MAP.write_text(

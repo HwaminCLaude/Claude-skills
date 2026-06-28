@@ -1,6 +1,6 @@
 ---
 name: pdf-to-notion
-description: 강의자료/문서 PDF 폴더를 Notion 데이터베이스의 페이지로 변환하는 스킬. PDF를 페이지별 PNG로 쪼개 Google Drive(rclone)에 올려 임베드하고, 페이지마다 "이미지 | 친근한 한국어 설명" 2단(column) 레이아웃을 만든다. 사용자가 "PDF를 노션에 올려줘", "강의자료 노션 변환", "pdf를 이미지로 찢어서 노션에", "이 폴더 자료들 노션 DB에 같은 작업" 이라고 하거나 폴더 안 PDF들을 참조 페이지 스타일로 노션에 정리해달라고 할 때 사용한다. 코드 노트북 변환은 code-guidebook-notion 스킬 사용.
+description: 강의자료/문서/논문 PDF 폴더를 Notion 데이터베이스의 페이지로 변환하는 스킬. PDF를 페이지별 PNG로 쪼개 Google Drive(rclone)에 올려 임베드하고, 페이지마다 "이미지 | 친근한 한국어 설명" 2단(column) 레이아웃을 만든다. 선택적으로 페이지마다 "📖 원문 전체 번역" 토글을 추가할 수 있다(영어 논문 전체 한국어 번역). 사용자가 "PDF를 노션에 올려줘", "강의자료 노션 변환", "pdf를 이미지로 찢어서 노션에", "논문 노션에 정리", "원문 전체 번역도 토글로 같이", "이 폴더 자료들 노션 DB에 같은 작업" 이라고 하거나 폴더 안 PDF들을 참조 페이지 스타일로 노션에 정리해달라고 할 때 사용한다. 코드 노트북 변환은 code-guidebook-notion 스킬 사용.
 ---
 
 # PDF → Notion 변환
@@ -18,8 +18,12 @@ H1: 강의자료 제목 (파란 배경)
   column_list
     ├─ 왼쪽 column: image (Google Drive 외부 URL — PDF 그 페이지 스캔)
     └─ 오른쪽 column: 그 페이지 내용을 풀어쓴 설명 블록들
+  toggle: "📖 원문 전체 번역"  ← (선택) page_translations 가 있으면 추가
   divider
 ```
+
+> **번역 토글은 선택**이다. `page_translations` 를 안 주면 기존처럼 2단만 만든다.
+> 영어 논문을 통째로 번역해 붙이려면 Step 3에서 `page_translations` 를 함께 작성한다.
 
 ## 사전 준비 (사용자 환경 의존)
 
@@ -70,8 +74,9 @@ PYTHONUTF8=1 METACODE_ROOT="<작업폴더>" python scripts/02_upload_to_drive.py
 
 ### Step 3. 설명(본문) 작성 — `_output/explanations_*.json`  ★핵심
 PDF 페이지 텍스트(content_cache.json)를 읽고 **읽는 사람이 몰라도 이해되도록** 페이지마다 설명 블록을 쓴다.
-- 스키마·블록 타입은 `references/SCHEMA.md` 참조 (`p`/`h3`/`callout`/`quote`/`num`/`bul`/`code`/`mermaid`/`divider`/`eq`).
-- 파일명 `explanations_<무엇>.json`, 구조 `{deck_slug: {page_explanations: {"1":[...]}, section_titles: {"3":"제목"}}}`.
+- 스키마·블록 타입은 `references/SCHEMA.md` 참조 (`p`/`h3`/`callout`/`quote`/`num`/`bul`/`code`/`mermaid`/`divider`/`eq`/`toggle`).
+- 파일명 `explanations_<무엇>.json`, 구조 `{deck_slug: {page_explanations: {"1":[...]}, page_translations: {"1":[...]}, section_titles: {"3":"제목"}}}`.
+- **(선택) 원문 전체 번역**: 각 페이지 원문을 통째로 번역해 `page_translations["페이지"]` 에 블록 배열로 넣으면, 빌더가 그 페이지에 **"📖 원문 전체 번역" 토글**을 자동으로 단다. 안 주면 2단만. 자세한 작성법은 아래 **"원문 전체 번역 토글 모드"** 절 참조.
 - **어투·양식은 아래 "텍스트 작성 규칙"을 그대로 따른다** (재사용 시 동일 톤 유지가 목적).
 - 여러 파일로 나눠 쓴 뒤 `scripts/merge_explanations.py` 로 `_output/explanations.json` 병합.
 
@@ -118,6 +123,20 @@ PYTHONUTF8=1 METACODE_ROOT="<작업폴더>" python scripts/04_serialize_blocks.p
 - 새 단원이 시작되는 페이지에는 `section_titles` 로 H2 제목을 지정.
 
 자세한 스키마·예시는 `references/SCHEMA.md` 를 읽고 그대로 따른다.
+
+## 원문 전체 번역 토글 모드 (선택 — 영어 논문 등)
+
+오른쪽 설명은 그대로 두고, 페이지마다 **원문 전체를 한국어로 번역**해 `📖 원문 전체 번역` 토글로 추가한다. 딥러닝 논문 19편(360p)을 이 모드로 변환·검증한 실전 교훈:
+
+- **`page_translations["페이지"]` = 그 페이지 원문의 충실 번역** 블록 배열. 본문 문단은 통째로 `p`, 소제목은 `h3`, 디스플레이 수식은 `eq`(LaTeX). 인라인 수식에 **`$` 델리미터 쓰지 말 것**(빌더는 `**굵게**`/`_이탤릭_`/`` `코드` `` 만 렌더). 거대 데이터표·예시덤프(부록)는 캡션·핵심 행만 번역하고 "(이하 표 생략)". 참고문헌은 1줄로.
+- **텍스트 추출은 PyMuPDF(`fitz`) 우선**. pdfplumber는 일부 PDF(arXiv 등)에서 **단어 사이 공백을 잃어**("Providedproperattribution…") 번역 품질을 망친다. `doc[i].get_text("text")` 로 재추출해 `content_cache.json` 의 page text 를 덮어쓰면 해결.
+- **생성은 병렬 서브에이전트로 분산**: deck별로 `executor`(sonnet) 에이전트에게 page 범위를 맡겨 `_output/gen/<slug>__pX-Y.json` 으로 저장 → 메인 컨텍스트 절약. **한 에이전트당 ≤6페이지**로 끊을 것: 한 번에 더 많이 쓰면 한 에이전트의 출력이 32k 토큰 한도를 넘겨 통째로 실패한다. 밀집한 논문은 ≤3페이지.
+- **커버리지 검사로 누락 추적**: 에이전트 완료 메시지는 못 믿는다("대기 중입니다" 등 잡소리). deck별 기대 페이지수 대비 gen 파일에 실제 든 페이지 집합을 비교해 **누락 페이지만 재발사**한다.
+- **스캔본 PDF**(텍스트 거의 0): 페이지 PNG 를 `executor` 에이전트에게 **직접 Read(vision)** 시켜 OCR·번역하게 한다(vision 전용 에이전트는 Write 불가라 executor 사용).
+- **토글은 column 안이 아니라 full-width**(column_list 형제)로 들어간다 — 노션 "한 요청 2단계 중첩" 한계 때문(빌더가 자동 처리).
+- **대량 업로드는 `notion-client` 직접이 가장 안정적**(MCP 위임보다). 토큰은 `~/.claude.json` 의 `OPENAPI_MCP_HEADERS` 안 `ntn_...`. `Client(auth=TOKEN, notion_version="2022-06-28")` 핀 → `pages.create(parent={"database_id":id})` 후 청크별 `blocks.children.append`. 신 SDK는 `databases.query` 없음 → `notion.request(path=f"databases/{id}/query", method="POST", body=...)`. **상태파일에 완료 deck 기록**해 중단 시 이어가기(멱등).
+- **빌더 내장 방어**: `chunked_append` 가 중첩 children 까지 세어 ≤85블록/요청으로 자르고, `desurrogate()` 가 OCR/LLM 산출물의 깨진 lone surrogate 를 제거해 `400 no low surrogate` 를 막는다.
+- **검증**: 업로드 후 각 페이지의 `column_list` 수 == `toggle` 수 == 원본 페이지수 인지 확인하면 누락·중복을 한 번에 잡는다.
 
 ## 재사용 체크리스트 (새 폴더 적용 시)
 1. `METACODE_ROOT`(PDF 폴더), `METACODE_DB_ID`(노션 DB) 설정.

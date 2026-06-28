@@ -17,6 +17,15 @@
         { "type": "p", "text": "" }
       ]
     },
+    // (선택) 페이지 번호 -> 원문 전체 번역 블록 배열.
+    // 있으면 그 페이지 column_list 바로 아래에 "📖 원문 전체 번역" 토글로 들어간다.
+    "page_translations": {
+      "1": [
+        { "type": "h3", "text": "Abstract" },
+        { "type": "p", "text": "이 논문은 ~를 제안한다. (원문 문단 충실 번역)" },
+        { "type": "eq", "expression": "E = mc^2" }
+      ]
+    },
     // (선택) 페이지 번호 -> 새 H2 섹션 시작 제목. 없으면 페이지 식별자(p001) 사용.
     "section_titles": {
       "3": "What is Regression?",
@@ -25,6 +34,11 @@
   }
 }
 ```
+
+`page_translations` 는 같은 블록 스키마(`p`/`h3`/`eq`/`callout`/…)를 쓰며, 빌더가
+**`📖 원문 전체 번역` 토글**로 감싸 페이지 이미지·설명(2단) 아래 full-width 로 배치한다.
+(토글을 column 안에 두면 column_list→column→toggle→children 이 3단계 중첩이 돼
+노션 API의 "한 요청 2단계 중첩" 한계에 걸리므로, column_list 와 형제로 둔다.)
 
 ## 지원 블록 타입
 
@@ -40,6 +54,7 @@
 | `code` | `code`, `language`(기본 python)     | 일반 코드 블록                       |
 | `divider` | -                                | 구분선                               |
 | `eq`   | `expression`                        | LaTeX 수식 (equation 블록)           |
+| `toggle` | `text`(제목), `children`(블록 spec 배열), `color` | 접이식 토글. 원문 번역 등 |
 
 `text` 안에서 `**...**` 를 굵게, `_..._` 를 이탤릭, `` `...` `` 를 코드로 변환.
 

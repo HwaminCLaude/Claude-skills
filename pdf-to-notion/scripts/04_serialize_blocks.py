@@ -42,6 +42,7 @@ def main():
         page_blocks = [h1]
 
         explanations = expls.get(slug, {}).get("page_explanations", {})
+        translations = expls.get(slug, {}).get("page_translations", {})  # (선택) 원문 번역
         section_titles = expls.get(slug, {}).get("section_titles", {})
         urls = drive.get(slug, {})
 
@@ -52,7 +53,10 @@ def main():
             image_url = urls.get(img_key)
             expl_specs = explanations.get(str(page_num), [])
             expl_blocks = builder.flatten_specs(expl_specs)
-            sec = builder.build_section_blocks(section_title, image_url, expl_blocks)
+            trans_specs = translations.get(str(page_num), [])
+            trans_blocks = builder.flatten_specs(trans_specs) if trans_specs else None
+            sec = builder.build_section_blocks(
+                section_title, image_url, expl_blocks, trans_blocks)
             page_blocks.extend(sec)
 
         out[slug] = {
