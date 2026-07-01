@@ -26,7 +26,14 @@ INTEGRATION_NAME = "메타코드"
 # Google Drive (rclone remote name)
 RCLONE_REMOTE = os.environ.get("RCLONE_REMOTE", "gdrive")
 RCLONE_DEST_ROOT = os.environ.get("PDF_DRIVE_DEST", "메타코드/노션이미지")
+# 가이드북 그림 / 원본 노트북(.ipynb) 파일 Drive 경로
+GB_DRIVE_DEST = os.environ.get("GB_DRIVE_DEST", "메타코드/가이드북이미지")
+GB_FILES_DRIVE_DEST = os.environ.get("GB_FILES_DRIVE_DEST", "메타코드/가이드북자료파일")
 RCLONE_BIN = os.environ.get("RCLONE_BIN", r"C:\Users\정화민\rclone\rclone.exe")
+
+# 노션 DB에 만들 '관련 원본 파일' 속성 이름 (Files & media 타입).
+# DB에 이 속성이 없으면 업로드 단계에서 mcp__notion__API-update-a-data-source 로 추가한다.
+SOURCE_FILES_PROP = os.environ.get("METACODE_SOURCE_FILES_PROP", "원본 파일")
 
 # 페이지별 강의자료 표시명 매핑 (노션 페이지 제목)
 DECK_TITLES = {

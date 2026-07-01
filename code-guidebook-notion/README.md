@@ -39,10 +39,10 @@ import 섹션: 라이브러리마다 "무엇을·왜"
 |------|----------|---------|
 | **0. 사전점검** | `preflight.py gb "<폴더>" --db "<DB>"` | 폴더·.ipynb·rclone·DB 확인. 외부 드라이브/캐글 링크 감지 |
 | 1. 추출 | `extract_notebooks.py <주차폴더>` | 코드/마크다운 + 출력(outputs) + 그림 → `nb_<slug>.json`, base64 그림 PNG 저장 |
-| 2. 그림 업로드 | `upload_guidebook_images.py <주차폴더>` | 그림 → Google Drive + 공개 URL(`gb_drive_urls.json`) |
+| 2. 그림·원본 업로드 | `upload_guidebook_images.py <주차폴더>` | 그림 → Drive 공개 URL(`gb_drive_urls.json`) + **원본 .ipynb** → Drive 공유링크(`gb_drive_files.json`, 노션 `원본 파일` 속성용) |
 | 3. spec 작성 | (수기/에이전트) `gb_<slug>.json` | 가이드북 본문. 스키마: [`references/GUIDEBOOK_SCHEMA.md`](./references/GUIDEBOOK_SCHEMA.md) |
 | 4. 변환·청크 | `build_guidebook.py <gb_json> <out_dir> <prefix>` | 노션 블록 변환 + 25블록 청크 |
-| 5. 업로드 | Notion MCP | 페이지 생성 후 청크 append |
+| 5. 업로드 | `notion_direct_upload.py <page_id> <청크폴더> --verify --expect N` | 페이지 생성 후 **REST API로 청크 직접 순차 append + 검증**(권장). MCP append는 대안 |
 
 > `output_images`의 **그림 key는 절대 지어내지 말 것** — nb json에 있는 값만 `image_ref` 로 사용.
 > `build_guidebook.py` 는 같은 폴더의 `03_build_notion.py`(→ `config.py`)를 불러오므로 두 파일이 함께 있어야 합니다(포함돼 있음).
@@ -52,8 +52,12 @@ import 섹션: 라이브러리마다 "무엇을·왜"
 - 맨 위 🎯 목표 callout → import 설명 → 코드 한 줄 풀이 → 하이퍼파라미터 → output/그림 → 맨 끝 ✅ 체크리스트
 - 노트북에 없는 내용 날조 금지(개념 보충은 OK)
 
-## ⚠️ 업로드 불변 규칙
-- 읽은 청크를 **변형 없이 그대로** 업로드(code/image/equation 유지).
-- 업로드 에이전트는 **`executor`(sonnet)**. 25블록 청크, 에이전트당 청크 ≤8(8개 초과면 c01~c08 → c09~ 순차 배치).
+## ⚡ 업로드: 직접 REST 권장 (`notion_direct_upload.py`)
+- 통합 토큰으로 `PATCH /v1/blocks/{page}/children` 에 청크를 이름순 순차 append → 수백 블록도 **수초**, 순서·원형(code/image/equation/callout) 그대로. `--verify --expect N` 로 총 블록 수·타입 분포 자동 대조. 토큰(`OPENAPI_MCP_HEADERS`/`NOTION_TOKEN`/`~/.claude.json`)은 **런타임에만 읽고 저장/출력하지 않음**.
+- **왜**: 업로드를 서브에이전트에 맡기면 블록 JSON 재출력이 **32k output-token 한도**에 걸려 대용량 청크가 통째로 실패하고, MCP 지연·5xx 재시도로 청크당 수십 분씩 걸린다.
+- (대안) MCP/에이전트 업로드 시: 읽은 청크를 **변형 없이 그대로**(code/image/equation 유지), 에이전트는 `executor`(sonnet), 25블록 청크·에이전트당 청크 적게.
+
+## ⚠️ DB 속성 주의 (구버전 API MCP)
+로컬 `@notionhq/notion-mcp-server` 는 구버전 API(2022-06-28)라 `*-a-data-source` 엔드포인트가 `invalid_request_url` 로 실패 → **API로 DB 속성 생성 불가**. `원본 파일`·`데이터` 같은 파일&미디어 속성은 사용자가 노션 UI에서 만든 뒤 `API-patch-page` 로 값만 채운다(값 채우기는 구버전에서도 됨).
 
 자세한 내용은 [`SKILL.md`](./SKILL.md) 참고.
