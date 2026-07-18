@@ -60,6 +60,21 @@ H1: 원자단위 아키텍처 — <라벨> · 코드 링크 = GitHub #Lxx
 > **2패스 필수**: 앵커는 코드페이지 발행 후에만 얻어짐 → B3 다음에 B4. `publish_notion.py`는 child_page(코드페이지)를 삭제하지 않음.
 > 같은 소스가 여러 repo면 `glossary.json`·`specs.json`은 **1회 생성**해 재사용하고 `--github-base`·부모 페이지만 바꿔 반복.
 
+## Mode B+ — 수식 · 예시 데이터 숫자 트레이스 · 시각화 · 폴더구조
+
+각 math 함수에 (a) 📐 **수식**(Notion 수식 블록, KaTeX), (b) 🔢 **예시로 따라가기**(작은 예시 데이터를 **실제 코드로 실행**해 뽑은 진짜 입력·출력·shape), (c) 📊 **그림**(matplotlib → Drive 임베드)을 붙인다. 값·그림은 전부 실행 결과라 **날조 0**. 인라인 DB에 **폴더구조**(📁src → 패키지 폴더 → 모듈 페이지)로 발행할 수 있다.
+
+| 단계 | 스크립트 | 하는 일 |
+|------|----------|---------|
+| P1. 예시 트레이스 | `trace_harness.py <패키지루트> <out>` | src를 CPU로 import·실행, 작은 예시를 파이프라인에 관통시켜 중간값(`trace.json`) + matplotlib 그림(`figures/`) 생성. **프로젝트별로 새로 작성**(NMFC판이 예시) |
+| P2. 그림 업로드 | `upload_figures.py <trace.json> <figdir> <drive_urls.json>` | rclone로 Drive 업로드 → 공개 임베드 URL(`lh3.googleusercontent.com/d/{id}`) |
+| P3. 수식·예시 spec 보강 | (에이전트) function에 `formula_latex`·`example_note` 추가 | KaTeX 수식 + 12살 설명. 값·그림은 안 씀(publisher가 trace에서 삽입). 스키마: [`references/CODE_GUIDEBOOK_SCHEMA.md`](./references/CODE_GUIDEBOOK_SCHEMA.md) |
+| P4. 폴더구조 발행 | `publish_code_pages.py --parent-db <database_id> --trace trace.json --drive-urls drive_urls.json` | 인라인 DB에 📖개요·용어집 · 📁src(→폴더→모듈) · 🔢예시 관통 페이지를 행으로 생성. 함수 섹션에 📐수식·🔢예시·📊그림 렌더 |
+| P5. 다이어그램 행 | (DB 행 생성) → `build_mermaid.py --notion-map anchors.json` → `publish_notion.py <행>` | 노드 click을 이 DB의 코드페이지 함수로 연결한 다이어그램을 별도 DB 행에 |
+
+> **정직성**: 페이지의 모든 숫자·그림은 LLM 추정이 아니라 `trace_harness.py`가 **실제 코드를 실행**해 얻은 결과.
+> **새 Notion API**: `databases.query` 제거·속성이 data_source로 이동 → `publish_code_pages.py`가 `data_sources/{id}/query`로 우회. DB 행 생성은 `parent=database_id` + title 속성으로 정상.
+
 ## 정확도 설계 (왜 신뢰할 수 있나)
 - **import 스코프 해석**: `from pkg.a.b import c` + `__init__` 재수출을 따라가 호출 대상을 정확히 특정.
 - **흔한 이름 오결선 차단**: `__init__`·`forward`·`update`·`predict` 등은 여러 클래스 중복 → 전역 이름매칭에서 제외.
