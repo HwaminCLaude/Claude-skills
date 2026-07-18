@@ -1,0 +1,74 @@
+{
+  "title": "원자단위 아키텍처",
+  "tones": {
+    "nmfc/apt.py": "toneTeal",
+    "nmfc/acs.py": "toneTeal",
+    "nmfc/": "toneIndigo",
+    "models/": "toneAmber",
+    "datasets/": "toneBlue",
+    "train.py": "toneMint",
+    "variants.py": "toneMint",
+    "evaluate.py": "toneRose",
+    "utils/": "toneRose"
+  },
+  "groups": [
+    { "id": "nmfc-math-and-heads",
+      "title": "NMFC 수학 모듈 ↔ 헤드 (forward가 affinity/energy/softmin/losses를 부르는 원자 경로)",
+      "modules": ["models/heads.py","models/heads_v3.py","nmfc/affinity.py","nmfc/energy.py","nmfc/softmin.py","nmfc/losses.py"] },
+    { "id": "controllers",
+      "title": "위상 컨트롤러(APT/ACS)와 손실·train 연결 (Phase 전환 판정)",
+      "modules": ["nmfc/apt.py","nmfc/acs.py","nmfc/losses.py","train.py"] },
+    { "id": "heads-bank-inference",
+      "title": "헤드·인코더·레퍼런스뱅크 (추론: fit_bank/forward_bank/predict/ood_score)",
+      "modules": ["models/encoders.py","models/heads.py","models/heads_v3.py","models/banks.py"] },
+    { "id": "baselines",
+      "title": "비교군 베이스라인 헤드 (softmax/ArcFace/Proto/Triplet/MFA)",
+      "modules": ["models/baselines.py","models/encoders.py"] },
+    { "id": "variant-dispatch",
+      "title": "variant 조립(config 동적 분기): build_nmfc_head가 v1/v3/negJ 헤드·축을 선택",
+      "modules": ["variants.py","models/heads.py","models/heads_v3.py"] },
+    { "id": "datasets",
+      "title": "데이터셋·PK 균형 샘플러·로더",
+      "modules": ["datasets/image.py","datasets/synthetic.py","datasets/samplers.py"] },
+    { "id": "train-orchestration",
+      "title": "학습·평가 오케스트레이션 (train.py가 데이터/헤드/손실/평가를 지휘)",
+      "modules": ["train.py","evaluate.py","variants.py"] }
+  ],
+  "chains": [
+    { "title": "학습 2단계 루프 (Phase I L_LMF → APT 전환 → Phase II NMFC NLL)",
+      "edges": [
+        ["train.py::main","train.py::run_from_config","config 로드"],
+        ["train.py::run_from_config","train.py::_run_image_core","이미지 실험 코어"],
+        ["train.py::_run_image_core","variants.py::build_nmfc_head","헤드 조립"],
+        ["variants.py::build_nmfc_head","models/heads_v3.py::VariantNMFCHead","v3/v4 변형"],
+        ["variants.py::build_nmfc_head","models/heads.py::NMFCHead","v1 기본"],
+        ["train.py::_run_image_core","variants.py::build_warmup","웜업 컨트롤러"],
+        ["variants.py::build_warmup","nmfc/apt.py::APTController","APT 상태기계"],
+        ["train.py::_run_image_core","nmfc/losses.py::linear_mfa_loss","Phase I: L_LMF"],
+        ["train.py::_run_image_core","nmfc/losses.py::fisher_ratio","Fisher비 모니터"],
+        ["nmfc/losses.py::fisher_ratio","nmfc/apt.py::APTController.update","정체 판정"],
+        ["nmfc/apt.py::APTController.update","nmfc/apt.py::APTController._fire","Phase I→II 전환"],
+        ["train.py::_run_image_core","models/heads_v3.py::VariantNMFCHead.forward_batch","Phase II forward"],
+        ["models/heads_v3.py::VariantNMFCHead.forward_batch","nmfc/softmin.py::hinge_temp_logits","기하 로짓"],
+        ["models/heads_v3.py::VariantNMFCHead.forward_batch","nmfc/losses.py::nmfc_loss","NMFC NLL"]
+      ] },
+    { "title": "추론/ReferenceBank 경로 (학습 종료 → 뱅크 적재 → 예측/평가)",
+      "edges": [
+        ["train.py::_run_image_core","models/heads.py::NMFCHead.fit_bank","뱅크 적재(v1)"],
+        ["train.py::_run_image_core","models/heads_v3.py::VariantNMFCHead.fit_coreset_bank","코어셋 뱅크(v3)"],
+        ["models/heads_v3.py::VariantNMFCHead.fit_coreset_bank","models/banks.py::kcenter_greedy","k-center 선택"],
+        ["models/heads.py::NMFCHead.fit_bank","models/banks.py::OnlineClassBank.charge","레퍼런스 충전"],
+        ["models/heads.py::NMFCHead.forward_bank","models/heads.py::NMFCHead.predict","뱅크 로짓→예측"],
+        ["train.py::_run_image_core","evaluate.py::embed_loader","임베딩 추출"],
+        ["evaluate.py::embed_loader","evaluate.py::topk_accuracy","Top-1/5"],
+        ["evaluate.py::embed_loader","evaluate.py::silhouette_of_embeddings","실루엣"]
+      ] },
+    { "title": "OOD 점수 경로 (에너지 기반 이상탐지 → AUC)",
+      "edges": [
+        ["train.py::run_ood","datasets/image.py::get_image_datasets","ID/OOD 로드"],
+        ["train.py::run_ood","evaluate.py::embed_loader","임베딩"],
+        ["train.py::run_ood","models/heads.py::NMFCHead.ood_score","OOD 점수(E±)"],
+        ["models/heads.py::NMFCHead.ood_score","evaluate.py::ood_auc","AUROC"]
+      ] }
+  ]
+}

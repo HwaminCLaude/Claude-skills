@@ -1,7 +1,7 @@
-# Claude Skills — 강의자료/노트북 → Notion 변환 모음
+# Claude Skills — 코드·자료 → Notion 변환 모음
 
 [Claude Code](https://docs.anthropic.com/claude-code) 에서 쓰는 **재사용 스킬(skill)** 저장소입니다.
-강의자료(PDF/PPTX)와 코드 노트북(.ipynb)을 **Notion 데이터베이스 페이지**로 자동 변환하는 두 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
+강의자료(PDF/PPTX)·코드 노트북(.ipynb)·소스 코드베이스를 **Notion 데이터베이스 페이지**로 자동 변환하는 세 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
 
 ## 📦 포함된 스킬
 
@@ -9,6 +9,7 @@
 |------|------|-----------|
 | [`pdf-to-notion/`](./pdf-to-notion) | **pdf-to-notion** | PDF/PPTX 강의자료 폴더 → 페이지마다 **"PDF 이미지 \| 친근한 한국어 설명" 2단 레이아웃** 노션 페이지 |
 | [`code-guidebook-notion/`](./code-guidebook-notion) | **code-guidebook-notion** | Jupyter 노트북 폴더 → **코드 0 기초자용 가이드북**(코드 한 줄 풀이 + 실행결과 + 그림 + 실무팁) 노션 페이지 |
+| [`code-callgraph-notion/`](./code-callgraph-notion) | **code-callgraph-notion** | Python 코드베이스 → **함수·메서드(원자단위) 호출그래프**를 계층형 Mermaid로(GitHub 소스 라인 딥링크) 노션 페이지 |
 
 각 스킬 폴더 안의 `README.md` 에 상세 사용법이 있습니다.
 
@@ -20,11 +21,16 @@ Claude-skills/
 │   ├── README.md                 ← 사람이 읽는 사용 설명
 │   ├── scripts/                  ← 파이프라인 파이썬 스크립트
 │   └── references/SCHEMA.md      ← 설명 JSON 스키마
-└── code-guidebook-notion/
+├── code-guidebook-notion/
+│   ├── SKILL.md
+│   ├── README.md
+│   ├── scripts/
+│   └── references/GUIDEBOOK_SCHEMA.md
+└── code-callgraph-notion/
     ├── SKILL.md
     ├── README.md
-    ├── scripts/
-    └── references/GUIDEBOOK_SCHEMA.md
+    ├── scripts/                  ← ast_graph·build_mermaid·validate_mermaid·publish_notion
+    └── references/               ← pipeline_guide.md · example_layout_nmfc.json
 ```
 
 ## 🚀 다른 컴퓨터에서 설치하기
@@ -43,12 +49,13 @@ $dst = "$env:USERPROFILE\.claude\skills"
 New-Item -ItemType Directory -Force $dst | Out-Null
 Copy-Item -Recurse -Force .\pdf-to-notion          $dst\
 Copy-Item -Recurse -Force .\code-guidebook-notion  $dst\
+Copy-Item -Recurse -Force .\code-callgraph-notion  $dst\
 ```
 
 **macOS / Linux**
 ```bash
 mkdir -p ~/.claude/skills
-cp -r pdf-to-notion code-guidebook-notion ~/.claude/skills/
+cp -r pdf-to-notion code-guidebook-notion code-callgraph-notion ~/.claude/skills/
 ```
 
 > oh-my-claudecode(OMC)를 쓴다면 `/oh-my-claudecode:skill add <경로>` 로 등록할 수도 있습니다.
@@ -66,6 +73,8 @@ cp -r pdf-to-notion code-guidebook-notion ~/.claude/skills/
 | **rclone** + `gdrive` remote | 이미지를 Google Drive에 올려 노션에 임베드 | 인증은 사용자가 직접(`rclone config`) |
 | **Notion MCP** 연결 | 노션 페이지 생성·블록 업로드 | 워크스페이스에 integration 연결 필요 |
 | **LibreOffice** (선택) | PPTX → PDF 변환 | PPTX 자료가 있을 때만 |
+
+> **`code-callgraph-notion` 은 준비물이 다릅니다** — rclone·PDF 라이브러리 대신 **mermaid-cli**(`npm i -g @mermaid-js/mermaid-cli`, 문법 검증)와 **notion-client**(`pip install notion-client`, 발행)만 있으면 됩니다. 표준 라이브러리 AST로 코드를 분석하므로 대상 코드의 의존성 설치는 불필요하고, 노드 딥링크를 쓰려면 대상 코드가 GitHub에 올라가 있으면 됩니다.
 
 ### 환경변수 (폴더·계정만 바꿔 재사용)
 | 변수 | 의미 | 기본값 |
