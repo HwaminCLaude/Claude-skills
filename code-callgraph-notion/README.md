@@ -46,6 +46,20 @@ H1: 원자단위 아키텍처 — <라벨> · 코드 링크 = GitHub #Lxx
 > 추출 직후 **팬텀 엣지 0** 검산(`dst_mod`이 노드에 없으면 `--pkg-root`/`--url-prefix` 틀림).
 > chain 심볼은 `graph.json`에 실제로 있는 `mod::sym`만. 흔한 이름·config 동적 분기 엣지는 layout에 수동 추가.
 
+## Mode B — 코드를 Notion으로 옮기고 guidebook식으로 이해하기
+
+다이어그램 노드를 **GitHub 대신 Notion 코드페이지**로 연결하고, 각 함수의 **코드 + 12살 눈높이 가이드북**(개념·전문용어·입력·주요 인자·로직·코드 한 줄씩 풀이·출력·연결·실무 팁·체크리스트)을 Notion에 싣는다. code-guidebook-notion 스킬의 블록 형식을 이식. 노드를 누르면 그 함수의 코드+설명이 Notion에서 열린다.
+
+| 단계 | 스크립트 | 하는 일 |
+|------|----------|---------|
+| B1. 코드 단위 추출 | `extract_code_units.py <패키지루트> <graph.json> <units.json> --pkg-root src` | 함수별 전체 소스(lineno..end_line)·시그니처·docstring·호출/피호출 엣지 → `units.json` |
+| B2. 개요/spec 작성 | (에이전트) `glossary.json` + 모듈별 `specs.json` | 프로젝트 개요·용어집 + 함수별 개념/용어/입력/인자/로직/한줄풀이/출력/팁/체크리스트. 스키마: [`references/CODE_GUIDEBOOK_SCHEMA.md`](./references/CODE_GUIDEBOOK_SCHEMA.md). **코드·링크는 안 씀**(파이프라인이 units에서 삽입) |
+| B3. 코드페이지 발행 | `publish_code_pages.py --plan-page <PARENT> --github-base <REPO> --units units.json --glossary glossary.json --specs specs.json --out-anchors anchors.json` | 부모 페이지 아래 📖개요·용어집 + 모듈당 1 코드페이지 생성(멱등: 아카이브 후 재생성) + 함수 앵커 수집(`anchors.json`) |
+| B4. 다이어그램 재연결 | `build_mermaid.py ... --notion-map anchors.json` → `publish_notion.py` | 노드 click을 Notion 코드페이지 함수 앵커로(없으면 GitHub 폴백) 재발행 |
+
+> **2패스 필수**: 앵커는 코드페이지 발행 후에만 얻어짐 → B3 다음에 B4. `publish_notion.py`는 child_page(코드페이지)를 삭제하지 않음.
+> 같은 소스가 여러 repo면 `glossary.json`·`specs.json`은 **1회 생성**해 재사용하고 `--github-base`·부모 페이지만 바꿔 반복.
+
 ## 정확도 설계 (왜 신뢰할 수 있나)
 - **import 스코프 해석**: `from pkg.a.b import c` + `__init__` 재수출을 따라가 호출 대상을 정확히 특정.
 - **흔한 이름 오결선 차단**: `__init__`·`forward`·`update`·`predict` 등은 여러 클래스 중복 → 전역 이름매칭에서 제외.

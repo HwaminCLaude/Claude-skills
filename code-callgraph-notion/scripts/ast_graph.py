@@ -58,13 +58,14 @@ def collect(root):
         info={"classes":{}, "functions":{}, "methods":collections.OrderedDict()}
         for node in tree.body:
             if isinstance(node, ast.ClassDef):
-                info["classes"][node.name]=node.lineno
+                info["classes"][node.name]=(node.lineno, getattr(node,"end_lineno",node.lineno))
                 mm=collections.OrderedDict()
                 for b in node.body:
-                    if isinstance(b,(ast.FunctionDef, ast.AsyncFunctionDef)): mm[b.name]=b.lineno
+                    if isinstance(b,(ast.FunctionDef, ast.AsyncFunctionDef)):
+                        mm[b.name]=(b.lineno, getattr(b,"end_lineno",b.lineno))
                 info["methods"][node.name]=mm
             elif isinstance(node,(ast.FunctionDef, ast.AsyncFunctionDef)):
-                info["functions"][node.name]=node.lineno
+                info["functions"][node.name]=(node.lineno, getattr(node,"end_lineno",node.lineno))
         mods[rm]=info
     return mods, trees
 
@@ -177,13 +178,13 @@ def main():
     for rm,info in mods.items():
         if "error" in info: continue
         ss=subsys_of(rm)
-        for c,ln in info.get("classes",{}).items():
-            nodes.append({"mod":rm,"sym":c,"kind":"class","line":ln,"subsys":ss,"url":url(rm,ln)})
-        for fn,ln in info.get("functions",{}).items():
-            nodes.append({"mod":rm,"sym":fn,"kind":"func","line":ln,"subsys":ss,"url":url(rm,ln)})
+        for c,(ln,en) in info.get("classes",{}).items():
+            nodes.append({"mod":rm,"sym":c,"kind":"class","line":ln,"end_line":en,"subsys":ss,"url":url(rm,ln)})
+        for fn,(ln,en) in info.get("functions",{}).items():
+            nodes.append({"mod":rm,"sym":fn,"kind":"func","line":ln,"end_line":en,"subsys":ss,"url":url(rm,ln)})
         for cls,mm in info.get("methods",{}).items():
-            for mn,ln in mm.items():
-                nodes.append({"mod":rm,"sym":cls+"."+mn,"kind":"method","line":ln,"subsys":ss,"url":url(rm,ln)})
+            for mn,(ln,en) in mm.items():
+                nodes.append({"mod":rm,"sym":cls+"."+mn,"kind":"method","line":ln,"end_line":en,"subsys":ss,"url":url(rm,ln)})
     edge_list=[{"src_mod":s,"src_sym":b,"dst_mod":c,"dst_sym":d,"kind":k,"count":n}
                for (s,b,c,d,k),n in edges.items()]
     nclass=sum(len(i.get("classes",{})) for i in mods.values() if "error" not in i)

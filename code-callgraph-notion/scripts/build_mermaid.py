@@ -63,9 +63,12 @@ def render_nodes(node_keys, index, delta_set, tones, tone_fallback):
         lines.append("end")
     return lines, classes
 
-def flowchart(body, node_keys, index, classes):
+def flowchart(body, node_keys, index, classes, nmap=None):
+    nmap=nmap or {}
+    def url_of(k):
+        return nmap.get(k) or index[k].get("url","")
     out=["```mermaid","flowchart TD",""]+body+[""]
-    out+=[f'click {nid(k)} "{index[k]["url"]}"' for k in sorted(set(node_keys)) if index[k]["url"]]
+    out+=[f'click {nid(k)} "{url_of(k)}"' for k in sorted(set(node_keys)) if url_of(k)]
     out+=["", CLASSDEFS]+[f'class {",".join(ids)} {cls}' for cls,ids in classes.items() if ids]
     out.append("```")
     return "\n".join(out)
@@ -74,10 +77,15 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("graph"); ap.add_argument("out_md")
     ap.add_argument("--layout", default=None); ap.add_argument("--delta", default=None)
+    ap.add_argument("--notion-map", default=None, help="publish_code_pages.py의 anchors.json — 노드 click을 Notion 앵커로")
     a=ap.parse_args()
     g=json.load(open(a.graph,encoding="utf-8"))
     index={ n["mod"]+"::"+n["sym"]: n for n in g["nodes"] }
     edges=g["edges"]
+    nmap={}
+    if a.notion_map:
+        try: nmap=json.load(open(a.notion_map,encoding="utf-8")).get("anchors",{})
+        except FileNotFoundError: pass
     layout=json.load(open(a.layout,encoding="utf-8")) if a.layout else {}
     title=layout.get("title","원자단위 아키텍처")
     groups=layout.get("groups") or auto_groups(g["nodes"])
@@ -119,7 +127,7 @@ def main():
                     seen.add((s,d)); body.append(f'{nid(s)} --> {nid(d)}')
         doc.append(f"### {grp['title']}")
         doc.append(f"*모듈: {', '.join(grp['modules'])} · 노드 {len(nks)} · 내부 엣지 {len(seen)}*\n")
-        doc.append(flowchart(body, nks, index, classes)); doc.append("")
+        doc.append(flowchart(body, nks, index, classes, nmap)); doc.append("")
 
     if chains:
         doc.append("## L2 — 핵심 실행 호출체인\n")
@@ -135,7 +143,7 @@ def main():
             doc.append(f"### {ch['title']}")
             if missing: doc.append(f"*(그래프에 없는 심볼 생략: {missing})*")
             doc.append("")
-            doc.append(flowchart(body, nks, index, classes)); doc.append("")
+            doc.append(flowchart(body, nks, index, classes, nmap)); doc.append("")
 
     open(a.out_md,"w",encoding="utf-8").write("\n".join(doc))
     print(f"[{g['plan']}] _diagrams.md: L1 {len(groups)} + L2 {len(chains)} 블록 -> {a.out_md}")

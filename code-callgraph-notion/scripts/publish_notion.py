@@ -69,6 +69,7 @@ def clear_section(client, page_id, sentinel):
     if start is None: return 0, len(kids)
     deleted=0
     for b in kids[start:]:
+        if b.get("type")=="child_page": continue   # 하위 코드 가이드북 페이지는 보존
         try: client.blocks.delete(b["id"]); deleted+=1; time.sleep(0.05)
         except Exception as e: print("  del err", e)
     return deleted, len(kids)
