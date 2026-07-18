@@ -103,6 +103,8 @@ def block_from_spec(spec):
         return {"object":"block","type":"divider","divider":{}}
     if t=="eq":
         return {"object":"block","type":"equation","equation":{"expression":spec.get("expression","")}}
+    if t=="image":
+        return {"object":"block","type":"image","image":{"type":"external","external":{"url":spec.get("url","")}}}
     if t=="flowmap":
         return _flowmap(spec)
     if t=="toggle":
