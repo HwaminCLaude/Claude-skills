@@ -1,13 +1,14 @@
 # Claude Skills — 코드·자료 → Notion 변환 모음
 
 [Claude Code](https://docs.anthropic.com/claude-code) 에서 쓰는 **재사용 스킬(skill)** 저장소입니다.
-강의자료(PDF/PPTX)·코드 노트북(.ipynb)·소스 코드베이스·강의 영상+자막을 **Notion 데이터베이스 페이지**로 자동 변환하는 네 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
+강의자료(PDF/PPTX)·보고서 PDF·코드 노트북(.ipynb)·소스 코드베이스·강의 영상+자막을 **Notion 데이터베이스 페이지**로 자동 변환하는 다섯 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
 
 ## 📦 포함된 스킬
 
 | 폴더 | 스킬 | 한 줄 설명 |
 |------|------|-----------|
 | [`pdf-to-notion/`](./pdf-to-notion) | **pdf-to-notion** | PDF/PPTX 강의자료 폴더 → 페이지마다 **"PDF 이미지 \| 친근한 한국어 설명" 2단 레이아웃** 노션 페이지 |
+| [`book-outline-notion/`](./book-outline-notion) | **book-outline-notion** | 목차 있는 긴 보고서·백서·단행본 PDF → **목차 계층 그대로 중첩 DB**(대분류 안에 하위 목차 DB). 원문 텍스트 + 진짜 표 + 그림 비전 OCR |
 | [`code-guidebook-notion/`](./code-guidebook-notion) | **code-guidebook-notion** | Jupyter 노트북 폴더 → **코드 0 기초자용 가이드북**(코드 한 줄 풀이 + 실행결과 + 그림 + 실무팁) 노션 페이지 |
 | [`code-callgraph-notion/`](./code-callgraph-notion) | **code-callgraph-notion** | Python 코드베이스 → **함수·메서드(원자단위) 호출그래프**를 계층형 Mermaid로(GitHub 소스 라인 딥링크) 노션 페이지 |
 | [`video-transcript-notion/`](./video-transcript-notion) | **video-transcript-notion** | 강의 영상 폴더 + 자막 → **차시마다 "영상 1개 + 그 밑에 타임스탬프 대본"** 노션 페이지 (드라이브 대량 업로드·정체 워치독 포함) |
@@ -22,6 +23,11 @@ Claude-skills/
 │   ├── README.md                 ← 사람이 읽는 사용 설명
 │   ├── scripts/                  ← 파이프라인 파이썬 스크립트
 │   └── references/SCHEMA.md      ← 설명 JSON 스키마
+├── book-outline-notion/
+│   ├── SKILL.md
+│   ├── README.md
+│   ├── scripts/                  ← 00_preflight ~ 10_verify (구조 자동탐지·중첩DB 구축)
+│   └── references/               ← GOTCHAS.md · SCHEMA.md
 ├── code-guidebook-notion/
 │   ├── SKILL.md
 │   ├── README.md
@@ -54,6 +60,7 @@ Claude Code는 `~/.claude/skills/<스킬이름>/SKILL.md` 위치의 스킬을 �
 $dst = "$env:USERPROFILE\.claude\skills"
 New-Item -ItemType Directory -Force $dst | Out-Null
 Copy-Item -Recurse -Force .\pdf-to-notion          $dst\
+Copy-Item -Recurse -Force .\book-outline-notion    $dst\
 Copy-Item -Recurse -Force .\code-guidebook-notion  $dst\
 Copy-Item -Recurse -Force .\code-callgraph-notion  $dst\
 Copy-Item -Recurse -Force .\video-transcript-notion $dst\
@@ -62,7 +69,7 @@ Copy-Item -Recurse -Force .\video-transcript-notion $dst\
 **macOS / Linux**
 ```bash
 mkdir -p ~/.claude/skills
-cp -r pdf-to-notion code-guidebook-notion code-callgraph-notion video-transcript-notion \
+cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-notion video-transcript-notion \
       ~/.claude/skills/
 ```
 
@@ -83,6 +90,8 @@ cp -r pdf-to-notion code-guidebook-notion code-callgraph-notion video-transcript
 | **LibreOffice** (선택) | PPTX → PDF 변환 | PPTX 자료가 있을 때만 |
 
 > **`video-transcript-notion` 은 준비물이 다릅니다** — PDF 라이브러리 없이 **rclone**(영상 업로드)과 **Notion 통합 토큰**만 있으면 됩니다. 자막 길이 실측·화질 진단에 **ffprobe**(선택)를 씁니다. 표준 라이브러리만 쓰므로 별도 pip 설치가 필요 없습니다.
+
+> **`book-outline-notion` 은 준비물이 다릅니다** — `pymupdf`·`pdfplumber`·**rclone**(그림 호스팅)과 **Notion 통합 토큰**이 필요하고, MCP 없이 REST 를 직접 호출합니다. 도식 OCR·요약은 **codex CLI**(선택)로 돌리며, 없으면 Claude 서브에이전트로 자동 폴백합니다.
 
 > **`code-callgraph-notion` 은 준비물이 다릅니다** — rclone·PDF 라이브러리 대신 **mermaid-cli**(`npm i -g @mermaid-js/mermaid-cli`, 문법 검증)와 **notion-client**(`pip install notion-client`, 발행)만 있으면 됩니다. 표준 라이브러리 AST로 코드를 분석하므로 대상 코드의 의존성 설치는 불필요하고, 노드 딥링크를 쓰려면 대상 코드가 GitHub에 올라가 있으면 됩니다.
 
