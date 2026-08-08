@@ -1,7 +1,7 @@
 # Claude Skills — 코드·자료 → Notion 변환 모음
 
 [Claude Code](https://docs.anthropic.com/claude-code) 에서 쓰는 **재사용 스킬(skill)** 저장소입니다.
-강의자료(PDF/PPTX)·보고서 PDF·코드 노트북(.ipynb)·소스 코드베이스·강의 영상+자막을 **Notion 데이터베이스 페이지**로 자동 변환하는 다섯 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
+강의자료(PDF/PPTX)·보고서 PDF·코드 노트북(.ipynb)·소스 코드베이스·강의 영상+자막을 **Notion 데이터베이스 페이지**로 자동 변환하는 여섯 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
 
 ## 📦 포함된 스킬
 
@@ -12,6 +12,7 @@
 | [`code-guidebook-notion/`](./code-guidebook-notion) | **code-guidebook-notion** | Jupyter 노트북 폴더 → **코드 0 기초자용 가이드북**(코드 한 줄 풀이 + 실행결과 + 그림 + 실무팁) 노션 페이지 |
 | [`code-callgraph-notion/`](./code-callgraph-notion) | **code-callgraph-notion** | Python 코드베이스 → **함수·메서드(원자단위) 호출그래프**를 계층형 Mermaid로(GitHub 소스 라인 딥링크) 노션 페이지 |
 | [`video-transcript-notion/`](./video-transcript-notion) | **video-transcript-notion** | 강의 영상 폴더 + 자막 → **차시마다 "영상 1개 + 그 밑에 타임스탬프 대본"** 노션 페이지 (드라이브 대량 업로드·정체 워치독 포함) |
+| [`curriculum-notion/`](./curriculum-notion) | **curriculum-notion** | 강의자료 묶음 → **기초 0인 사람이 from scratch로 따라가는 학습 커리큘럼**(주차 페이지 + 유닛 중첩 DB + **자동 채점되는 Colab 노트북**) |
 
 각 스킬 폴더 안의 `README.md` 에 상세 사용법이 있습니다.
 
@@ -38,7 +39,7 @@ Claude-skills/
 │   ├── README.md
 │   ├── scripts/                  ← ast_graph·build_mermaid·validate_mermaid·publish_notion
 │   └── references/               ← pipeline_guide.md · example_layout_nmfc.json
-└── video-transcript-notion/
+├── video-transcript-notion/
     ├── SKILL.md
     ├── README.md
     ├── scripts/                  ← 01_scan·02_upload_videos·03_build_pages·04_sync_videos·06_verify·dashboard
