@@ -59,16 +59,60 @@ def _header(mod) -> str:
     return "\n".join(lines)
 
 
+GRADER_HEAD = "# ── 채점 ── 빈칸을 아직 안 채웠으면 빨간 오류 대신 안내가 나와요"
+
+SOL_INJECT = '''# ── 이어서 돌리기 위한 정답 구현 ──
+# 5·6장은 아래 구현을 씁니다. 3장을 아직 안 채웠어도 노트북이 끝까지 돌아가요.
+# (직접 채운 게 맞았다면 내용이 같으니 결과도 같아요.)
+{sol}
+
+# 4장이 빈칸 때문에 중간에 멈췄다면 거기서 만들던 **변수**도 없다.
+# 5·6장이 그 변수를 쓰면 NameError 가 나므로, 정답 기준으로 조용히 한 번 더 계산해 둔다.
+import contextlib as _ctx, io as _io
+with _ctx.redirect_stdout(_io.StringIO()), _ctx.redirect_stderr(_io.StringIO()):
+    try:
+{check}
+    except Exception:
+        pass'''
+
+
+def _wrap_grader(src: str) -> str:
+    """채점 셀을 try/except 로 감싼다.
+
+    3장 TODO 는 일부러 NotImplementedError 를 던진다. 그런데 그게 4장에서 그대로 터지면
+    '모두 실행' 했을 때 화면이 빨갛게 되고, 학습자는 노트북이 고장난 줄 안다.
+    빈칸이 안 채워진 것과 답이 틀린 것을 구분해서 알려 준다.
+    """
+    body = "\n".join("    " + ln for ln in src.splitlines())
+    return (f"{GRADER_HEAD}\ntry:\n{body}\n"
+            "except NotImplementedError:\n"
+            "    print('⏳ 아직 3장 TODO 를 안 채웠어요. 채운 뒤 이 셀을 다시 실행하세요.')\n"
+            "except AssertionError as _e:\n"
+            "    print('❌ 값이 정답과 달라요:', _e or '(assert 실패)')\n"
+            "    print('   3장으로 돌아가 다시 보세요.')\n"
+            "except Exception as _e:\n"
+            "    print('❌', type(_e).__name__, '—', _e)")
+
+
 def build(mod) -> nbf.NotebookNode:
     nb = nbf.v4.new_notebook()
     cells = [md(_header(mod))]
+    sol = (getattr(mod, "SOLUTION", "") or "").strip()
     for key, name, why in CHAPTERS:
         items = getattr(mod, "NB", {}).get(key)
         if not items:
             continue
         cells.append(md(f"## {name}\n\n{why}"))
         for kind, body in items:
-            cells.append(md(body) if kind == "md" else code(body))
+            if kind == "code" and key == "check":
+                cells.append(code(_wrap_grader(body)))
+            else:
+                cells.append(md(body) if kind == "md" else code(body))
+        # 채점이 끝나면 정답 구현을 넣어 5·6장이 항상 돌게 한다
+        if key == "check" and sol:
+            chk = "\n\n".join(b for k, b in items if k == "code")
+            indented = "\n".join("        " + ln for ln in chk.splitlines())
+            cells.append(code(SOL_INJECT.format(sol=sol, check=indented)))
 
     # 정답은 **맨 끝에만** 둔다. 앞쪽(특히 1장)에 정답이 있으면 3장 TODO 가 무의미해진다.
     if getattr(mod, "SOLUTION", None):
