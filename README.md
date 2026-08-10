@@ -1,7 +1,13 @@
-# Claude Skills — 코드·자료 → Notion 변환 모음
+# Claude Skills — 코드·자료를 배우기 쉬운 형태로 바꾸는 모음
 
 [Claude Code](https://docs.anthropic.com/claude-code) 에서 쓰는 **재사용 스킬(skill)** 저장소입니다.
-강의자료(PDF/PPTX)·보고서 PDF·코드 노트북(.ipynb)·소스 코드베이스·강의 영상+자막을 **Notion 데이터베이스 페이지**로 자동 변환하는 여섯 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
+강의자료(PDF/PPTX)·보고서 PDF·코드 노트북(.ipynb)·소스 코드베이스·강의 영상+자막을
+**공부할 수 있는 형태**로 자동 변환하는 일곱 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
+
+출력 대상은 두 갈래입니다.
+
+- **Notion 페이지로** — 여섯 스킬 (`*-notion`). Notion 통합 토큰·rclone 등이 필요합니다.
+- **로컬 HTML 파일로** — `notebook-explainer` 하나. **외부 서비스·API 키가 필요 없습니다.**
 
 ## 📦 포함된 스킬
 
@@ -13,6 +19,7 @@
 | [`code-callgraph-notion/`](./code-callgraph-notion) | **code-callgraph-notion** | Python 코드베이스 → **함수·메서드(원자단위) 호출그래프**를 계층형 Mermaid로(GitHub 소스 라인 딥링크) 노션 페이지 |
 | [`video-transcript-notion/`](./video-transcript-notion) | **video-transcript-notion** | 강의 영상 폴더 + 자막 → **차시마다 "영상 1개 + 그 밑에 타임스탬프 대본"** 노션 페이지 (드라이브 대량 업로드·정체 워치독 포함) |
 | [`curriculum-notion/`](./curriculum-notion) | **curriculum-notion** | 강의자료 묶음 → **기초 0인 사람이 from scratch로 따라가는 학습 커리큘럼**(주차 페이지 + 유닛 중첩 DB + **자동 채점되는 Colab 노트북**) |
+| [`notebook-explainer/`](./notebook-explainer) | **notebook-explainer** | 노트북·스크립트 → **단일 HTML 인터랙티브 해설**. 코드 줄마다 클릭 설명 + **텐서 shape 변화·모델 구조 위젯**(층 클릭 ↔ 코드 줄 하이라이트). 모든 수치는 노트북 출력에서 읽은 실제 값. **Notion·API 키 불필요** |
 
 각 스킬 폴더 안의 `README.md` 에 상세 사용법이 있습니다.
 
@@ -40,10 +47,15 @@ Claude-skills/
 │   ├── scripts/                  ← ast_graph·build_mermaid·validate_mermaid·publish_notion
 │   └── references/               ← pipeline_guide.md · example_layout_nmfc.json
 ├── video-transcript-notion/
+│   ├── SKILL.md
+│   ├── README.md
+│   ├── scripts/                  ← 01_scan·02_upload_videos·03_build_pages·04_sync_videos·06_verify·dashboard
+│   └── references/               ← CONFIG.md · GOTCHAS.md
+├── notebook-explainer/           ← 유일하게 Notion을 쓰지 않는 스킬 (로컬 HTML 출력)
     ├── SKILL.md
     ├── README.md
-    ├── scripts/                  ← 01_scan·02_upload_videos·03_build_pages·04_sync_videos·06_verify·dashboard
-    └── references/               ← CONFIG.md · GOTCHAS.md
+    ├── scripts/                  ← extract_notebook.py(base64·ANSI 제거) · verify_page.js(브라우저 검증)
+    └── references/               ← widget-recipes.md · architecture-recipes.md
 ```
 
 ## 🚀 다른 컴퓨터에서 설치하기
@@ -65,12 +77,15 @@ Copy-Item -Recurse -Force .\book-outline-notion    $dst\
 Copy-Item -Recurse -Force .\code-guidebook-notion  $dst\
 Copy-Item -Recurse -Force .\code-callgraph-notion  $dst\
 Copy-Item -Recurse -Force .\video-transcript-notion $dst\
+Copy-Item -Recurse -Force .\curriculum-notion       $dst\
+Copy-Item -Recurse -Force .\notebook-explainer      $dst\
 ```
 
 **macOS / Linux**
 ```bash
 mkdir -p ~/.claude/skills
-cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-notion video-transcript-notion \
+cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-notion \
+      video-transcript-notion curriculum-notion notebook-explainer \
       ~/.claude/skills/
 ```
 
@@ -96,6 +111,11 @@ cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-not
 
 > **`code-callgraph-notion` 은 준비물이 다릅니다** — rclone·PDF 라이브러리 대신 **mermaid-cli**(`npm i -g @mermaid-js/mermaid-cli`, 문법 검증)와 **notion-client**(`pip install notion-client`, 발행)만 있으면 됩니다. 표준 라이브러리 AST로 코드를 분석하므로 대상 코드의 의존성 설치는 불필요하고, 노드 딥링크를 쓰려면 대상 코드가 GitHub에 올라가 있으면 됩니다.
 
+> **`notebook-explainer` 는 위 준비물이 하나도 필요 없습니다** — Notion 토큰도, rclone도, PDF 라이브러리도 쓰지 않습니다.
+> 결과물이 로컬 HTML 파일 하나이기 때문입니다. **Python 표준 라이브러리만으로 추출이 돌아가고**,
+> 생성된 페이지를 실제 브라우저로 검증하려면 Node + playwright만 한 번 깔면 됩니다
+> (`npm i -g playwright && npx playwright install chromium-headless-shell`). 검증은 생략해도 페이지는 만들어집니다.
+
 ### 환경변수 (폴더·계정만 바꿔 재사용)
 | 변수 | 의미 | 기본값 |
 |------|------|--------|
@@ -107,7 +127,12 @@ cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-not
 > 스크립트의 기본 경로는 개발 환경(Windows) 기준입니다. **다른 컴퓨터에서는 위 환경변수로 경로를 맞춰주세요.**
 > 모든 파이썬 실행에는 한글/이모지 깨짐 방지를 위해 `PYTHONUTF8=1 PYTHONIOENCODING=utf-8` 를 붙입니다.
 
-## 🔁 작업 흐름 (공통 6단계)
+## 🔁 작업 흐름 (Notion 계열 공통 6단계)
+
+> `notebook-explainer` 는 이 흐름을 따르지 않습니다 —
+> **추출 → 시각화 인벤토리 작성 → 단일 HTML 작성 → 브라우저 검증 → 원본 옆에 저장** 네 단계로 끝나고,
+> 2·5단계(Drive 업로드·Notion 업로드)가 아예 없습니다.
+
 0. **사전 점검**(`preflight.py`) — 폴더·자료·rclone·패키지·DB 확인. 빠진 건 사용자에게 요구하거나 자동 조치 후 재점검.
 1. 자료 추출 (PDF 분할/텍스트, 노트북 코드·출력·그림)
 2. 이미지 Google Drive 업로드 + 공개 임베드 URL 생성
