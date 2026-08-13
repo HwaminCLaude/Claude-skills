@@ -23,6 +23,17 @@ import subprocess
 import sys
 from pathlib import Path
 
+
+# Windows consoles default to cp949 here, and every one of these scripts prints
+# Korean. Without this, a run dies with UnicodeEncodeError *after* it has already
+# written its output files — the confusing failure mode of looking broken while
+# actually having succeeded.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 QUALITY_DIR = {"ql": "480p15", "qm": "720p30", "qh": "1080p60", "qk": "2160p60"}
 
 
@@ -123,10 +134,18 @@ def main() -> int:
             shutil.copyfile(src, folder / "scenes" / f"{i:02d}_{src.name}")
 
         full = folder / f"{num}_{safe_name(title)}.mp4"
-        ok = concat(ordered, full) if len(ordered) > 1 else bool(
-            shutil.copyfile(ordered[0], full))
+        # mux_av.py already produced a muxed episode with narration and subtitles —
+        # re-concatenating the raw scenes here would silently drop both.
+        final = episode / f"{episode.name}_FINAL.mp4"
+        muxed = final.is_file()
+        if muxed:
+            shutil.copyfile(final, full)
+            ok = True
+        else:
+            ok = concat(ordered, full) if len(ordered) > 1 else bool(
+                shutil.copyfile(ordered[0], full))
 
-        for doc in ("script.md", "narration.srt", "shots.json", "main.py"):
+        for doc in ("script.md", "narration.srt", "narration.mp3", "shots.json", "main.py"):
             src = episode / doc
             if src.is_file():
                 shutil.copyfile(src, folder / doc)
@@ -140,9 +159,11 @@ def main() -> int:
         summary.append({"episode": name, "title": title, "folder": str(folder),
                         "scenes": len(ordered), "duration_sec": dur,
                         "size_mb": size_mb})
+        summary[-1]["muxed"] = muxed
         mins, secs = divmod(dur, 60)
         print(f"[deliver] {folder.name}")
-        print(f"          {len(ordered)} scenes → {int(mins)}분 {secs:04.1f}초, {size_mb} MB")
+        print(f"          {len(ordered)} scenes → {int(mins)}분 {secs:04.1f}초, {size_mb} MB"
+              f"{'  · 나레이션+자막 포함' if muxed else '  · 무음 (tts_narrate/mux_av 미실행)'}")
 
     if summary:
         total = sum(s["duration_sec"] for s in summary)

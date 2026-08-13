@@ -20,6 +20,7 @@ description: 논문 PDF나 코드(둘 중 하나 또는 둘 다)를 받아 임�
 - `manim`은 **0.20.1로 핀**한다. raenim이 0.20.x 시절에 멈춰 있어(마지막 커밋 2026-03) 0.21.0은 미검증이다.
 - `noise`는 cp311 휠이 없어 빌드가 **실패하는 게 정상**이다. `setup_env.py`가 순수 파이썬 shim을 넣는다.
 - 프로젝트 루트는 **ASCII 경로**(`C:\manimwork\<slug>`)로 만든다. MiKTeX가 한글 경로에서 사고를 낸다.
+- 나레이션 음성은 **edge-tts**(`uv pip install edge-tts`). API 키가 필요 없고 한국어 음성 3종이 있다. 인터넷은 필요하다.
 
 ---
 
@@ -62,7 +63,8 @@ LaTeX가 없으면 `winget install --id MiKTeX.MiKTeX --silent --accept-package-
 
 - **논문** → `paper.json` (섹션, 핵심 주장, 수식, figure 목록, 한계)
   - figure 목록은 `python scripts/crop_figure.py --pdf <pdf> --list`로 뽑는다
-- **코드** → `codebase.json` (엔트리포인트, 호출 체인, 핵심 함수, 텐서 shape 흐름)
+- **코드** → `codebase.json` — `python scripts/parse_code.py --input <ipynb|py|dir> --out <root> --dump-text`
+  - 섹션(마크다운 헤딩)·정의·**shape 흐름 지점**을 뽑는다. shape 증거는 두 종류다: 셀 출력의 `torch.Size([...])`(실측)와 코드 주석의 `# (B, T, D)`(저자 표기). 데이터 흐름 편성은 이 지점들을 뼈대로 삼는다.
 
 ### Stage 2 — 시리즈 편성  → **CP1 사용자 승인**
 
@@ -117,7 +119,21 @@ python scripts/render.py --episode <ep> --quality qh --jobs 3
 
 구간별로 프로세스를 병렬로 띄운다(포크의 `--parallel` 없이 같은 효과). 캐시는 켜 둔다 — 고친 구간만 다시 그려진다. 오래 걸리므로 백그라운드로 돌린다.
 
-### Stage 7 — 검증  → **CP3 최종 검수**
+### Stage 7 — 나레이션 음성 + 자막
+
+```bash
+python scripts/tts_narrate.py --episode <ep> --quality qh --fit
+python scripts/mux_av.py     --episode <ep> --quality qh          # 자막을 트랙으로
+python scripts/mux_av.py     --episode <ep> --quality qh --burn   # 자막을 화면에 태움
+```
+
+`shots.json`의 타임라인이 곧 음성의 배치 시각이다 — 정렬이 아니라 **배치**다. 다만 대본에 없는 전환 컷 때문에 씬이 예상보다 4~8% 길므로, `tts_narrate.py`가 렌더된 씬 길이를 ffprobe로 재서 **씬 단위로 스케일 보정**한다. 그래서 드리프트가 뒤로 누적되지 않는다.
+
+음성은 **edge-tts**(무료, API 키 불필요). 기본 음성은 `ko-KR-HyunsuMultilingualNeural` — 대본이 한영 혼용("토큰", "RNN")이라 multilingual이 맞다. `--fit`은 슬롯을 넘치는 줄만 속도를 올려 다시 합성한다.
+
+산출: `narration.mp3`(영상 길이와 일치), `narration.srt`(실측 음성 길이 기준), `tts/`(줄별 mp3 — 한 줄만 다시 녹음 가능), `<ep>_FINAL.mp4`.
+
+### Stage 8 — 검증  → **CP3 최종 검수**
 
 ```bash
 python scripts/verify_output.py --episode <ep> --quality qh --frames 3
@@ -167,6 +183,7 @@ C:\manimwork\<slug>\
 | `preflight.py` | 환경 13항목 진단 (읽기 전용) |
 | `setup_env.py` | uv 프로젝트 + manim/raenim 설치 + noise shim |
 | `parse_paper.py` | 논문 PDF → `paper.json` + `paper.txt` (섹션·수식·캡션·그림) |
+| `parse_code.py` | 노트북·소스 → `codebase.json` (섹션·정의·**shape 흐름 지점**) |
 | `estimate_narration.py` | 낭독 시간 추정 → `est_sec`/`run_time`/`wait` |
 | `scaffold_video.py` | 에피소드 폴더 + main.py 스텁 + shots.json |
 | `crop_figure.py` | 논문 PDF에서 figure 추출 (임베드 이미지 / 영역 렌더) |
@@ -174,6 +191,8 @@ C:\manimwork\<slug>\
 | `render.py` | 스모크→본번 렌더, 씬 병렬, 오류 분류, LaTeX 경합 자동 재시도 |
 | `verify_output.py` | 길이 정합 + 해상도 + 프레임 샘플 |
 | `export_script.py` | `shots.json` → `script.md`(녹음용) + `narration.srt` |
+| `tts_narrate.py` | 대본 → 나레이션 음성(edge-tts) + 실측 자막, 씬 단위 스케일 보정 |
+| `mux_av.py` | 씬 결합 + 음성 + 자막(트랙 또는 태움) → `<ep>_FINAL.mp4` |
 | `deliver.py` | 씬 합치기 + 납품 폴더 구성 (편별 폴더 + README) |
 
 전부 `--json`을 지원해 기계적으로 결과를 읽을 수 있다.

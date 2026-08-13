@@ -25,6 +25,17 @@ import subprocess
 import sys
 from pathlib import Path
 
+
+# Windows consoles default to cp949 here, and every one of these scripts prints
+# Korean. Without this, a run dies with UnicodeEncodeError *after* it has already
+# written its output files — the confusing failure mode of looking broken while
+# actually having succeeded.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 MANIM_PIN = "manim==0.20.1"  # raenim was developed against 0.20.x; 0.21 is unverified
 RAENIM_GIT = "git+https://github.com/CodingVillainKor/raenim.git"
 DEPS = [MANIM_PIN, "addict>=2.4.0", "opencv-python>=4.12.0.88", "numpy>=1.26", "PyMuPDF>=1.24"]

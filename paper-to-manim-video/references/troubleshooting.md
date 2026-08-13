@@ -60,7 +60,30 @@ WARN은 그대로 진행한다: codex 없음 → 이미지 생성 노드 off, `n
 
 ---
 
-## 3. 자주 밟는 함정
+## 3. 음성·자막 (Stage 7)
+
+`tts_narrate.py` 는 **edge-tts** 를 쓴다. API 키가 없고 인터넷만 있으면 된다.
+
+```bash
+uv pip install edge-tts        # 프로젝트 venv에
+python scripts/tts_narrate.py --episode <ep> --quality qh --fit
+python scripts/mux_av.py     --episode <ep> --quality qh          # 자막 트랙
+python scripts/mux_av.py     --episode <ep> --quality qh --burn   # 자막 태움
+```
+
+| 증상 | 원인·조치 |
+|---|---|
+| 음성이 화면보다 점점 밀린다 | 씬 스케일 보정이 안 된 것. `--quality` 를 실제 렌더한 품질과 맞춰야 ffprobe로 씬 길이를 잴 수 있다. 렌더 전에 TTS를 돌리면 보정이 불가능하다 |
+| 특정 줄이 애니메이션보다 길다 | `--fit` 을 쓰면 그 줄만 말속도를 올려 재합성한다. 그래도 넘치면 `shots.json` 의 문장을 쪼갠다 |
+| `Unknown decoder 'copy'` | ffmpeg 인자 순서 문제. 모든 `-i` 입력이 코덱 옵션보다 앞에 와야 한다 (`mux_av.py` 는 처리돼 있음) |
+| 자막이 안 보인다 | 기본은 **선택 가능한 트랙**(mov_text)이라 플레이어에서 켜야 한다. 유튜브 업로드나 미리보기용이면 `--burn` |
+| 한 줄만 다시 녹음하고 싶다 | `tts/<shot_id>.mp3` 를 지우고 `tts_narrate.py` 를 다시 돌린다 (나머지는 캐시됨) |
+
+음성은 3종 중 고른다: `ko-KR-HyunsuMultilingualNeural`(기본, 한영 혼용에 강함), `ko-KR-InJoonNeural`(남), `ko-KR-SunHiNeural`(여).
+
+## 4. 자주 밟는 함정
+
+**cp949 UnicodeEncodeError** — Windows 콘솔 기본 인코딩이 cp949라, 한글이나 `—` 를 출력하는 순간 스크립트가 죽는다. 고약한 건 **출력 파일은 이미 다 쓴 뒤에 죽는다**는 점이라, 실패한 줄 알고 다시 돌리기 쉽다. 모든 스크립트가 시작할 때 `sys.stdout.reconfigure(encoding="utf-8")` 로 스스로 전환하므로 지금은 발생하지 않는다. 직접 만든 스크립트를 추가한다면 같은 가드를 넣을 것.
 
 **대화형 프롬프트에서 멈춤** — 한 파일에 Scene 클래스가 여러 개인데 `manim main.py`를 그냥 실행하면 Manim이 어느 씬을 렌더할지 물어본다. `render.py`는 AST로 클래스를 찾아 항상 이름을 명시하므로 이 문제가 없다. 수동으로 돌릴 때만 주의.
 

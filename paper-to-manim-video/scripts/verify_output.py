@@ -23,6 +23,17 @@ import sys
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
 
+
+# Windows consoles default to cp949 here, and every one of these scripts prints
+# Korean. Without this, a run dies with UnicodeEncodeError *after* it has already
+# written its output files — the confusing failure mode of looking broken while
+# actually having succeeded.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 QUALITY_DIR = {"ql": "480p15", "qm": "720p30", "qh": "1080p60", "qk": "2160p60"}
 TOLERANCE = 0.15  # 15% — beyond this the episode is flagged for REWORK
 

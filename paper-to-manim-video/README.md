@@ -15,11 +15,13 @@
 
 | 파일 | 내용 |
 |---|---|
-| `<제목>.mp4` | 1080p60 완성 영상 (구간별 mp4도 따로) |
-| `script.md` | 타임코드 붙은 **녹음용 대본** |
-| `narration.srt` | 자막 |
+| `<이름>_FINAL.mp4` | 1080p60 완성 영상 — **나레이션 음성 + 자막 포함** |
+| `narration.mp3` | TTS 나레이션 트랙 (영상 길이와 일치) |
+| `narration.srt` | 자막 (실측 음성 길이 기준) |
+| `script.md` | 타임코드 붙은 **녹음용 대본** (직접 녹음할 경우) |
 | `shots.json` | 대본·타이밍·에셋의 단일 출처 |
 | `main.py` | 구간별 Manim 씬 코드 |
+| `scenes/` | 구간별 mp4 (따로 편집할 때) |
 
 기본값은 5~8분 단편 3~5편 시리즈입니다.
 
@@ -44,6 +46,7 @@
 | FFmpeg | `winget install Gyan.FFmpeg` |
 | LaTeX (MiKTeX) | 수식 렌더용. preflight가 설치까지 안내 |
 | 한글 폰트 | Windows는 Malgun Gothic 기본 탑재 |
+| edge-tts | 나레이션 음성. `uv pip install edge-tts` — **API 키 불필요**, 인터넷만 필요 |
 | Codex CLI *(선택)* | 이미지 생성 노드. 없으면 자동으로 꺼지고 전 구간 Manim 작도 |
 
 `scripts/preflight.py`가 13개 항목을 진단하고, 실패마다 구체적인 복구 명령을 알려줍니다.
@@ -82,8 +85,23 @@ Stage 3  나레이션 대본 + shots.json          [CP2]
 Stage 4  에셋 확보 + 씬 코드 생성
 Stage 5  480p15 스모크 렌더 + 오류 자동 수정
 Stage 6  1080p60 본번 렌더 (구간 병렬)
-Stage 7  길이 정합 검증 + 납품 폴더 구성      [CP3]
+Stage 7  나레이션 음성(TTS) + 자막 + 최종 mux
+Stage 8  길이 정합 검증 + 납품 폴더 구성      [CP3]
 ```
+
+## 음성과 자막이 자동으로 맞는 이유
+
+영상 타임라인이 `shots.json`의 `run_time + wait`로 만들어져 있으므로, 각 문장의 시작 시각은 **이미 알고 있다**. 음성은 정렬(align)할 필요 없이 그 시각에 **배치**하면 된다.
+
+한 가지만 보정하면 된다 — 대본에 없는 전환 컷 때문에 씬이 예상보다 4~8% 길다. `tts_narrate.py`가 렌더된 씬을 ffprobe로 재서 **씬 단위로 스케일**하므로 오차가 뒤로 누적되지 않는다. 씬 안에서의 잔차는 수백 밀리초 수준이다.
+
+```bash
+python scripts/tts_narrate.py --episode <ep> --quality qh --fit
+python scripts/mux_av.py     --episode <ep> --quality qh          # 자막 트랙
+python scripts/mux_av.py     --episode <ep> --quality qh --burn   # 자막 태움
+```
+
+기본 음성은 `ko-KR-HyunsuMultilingualNeural` — 대본이 한영 혼용이라 multilingual이 맞다. 다른 선택지는 `ko-KR-InJoonNeural`(남), `ko-KR-SunHiNeural`(여). `--fit`은 배정된 슬롯을 넘치는 줄만 말하기 속도를 올려 다시 합성한다. `tts/`에 줄별 mp3가 남으므로 마음에 안 드는 한 줄만 다시 녹음할 수 있다.
 
 ## 타이밍 계약
 
@@ -120,6 +138,7 @@ self.playw(Write(title), run_time=1.5, wait=wait)
 | `preflight.py` | 환경 13항목 진단 (읽기 전용) |
 | `setup_env.py` | uv 프로젝트 + manim/raenim 설치 + `noise` shim 주입 |
 | `parse_paper.py` | 논문 PDF → `paper.json` + `paper.txt` |
+| `parse_code.py` | 노트북·소스 → `codebase.json` (섹션·정의·shape 흐름 지점) |
 | `estimate_narration.py` | 낭독 시간 추정 → `est_sec` / `run_time` / `wait` |
 | `scaffold_video.py` | 에피소드 폴더 + `main.py` 스텁 + `shots.json` |
 | `crop_figure.py` | 논문 PDF에서 figure 추출 |
@@ -127,6 +146,8 @@ self.playw(Write(title), run_time=1.5, wait=wait)
 | `render.py` | 스모크→본번 렌더, 구간 병렬, 오류 분류, LaTeX 경합 자동 재시도 |
 | `verify_output.py` | 길이 정합 + 해상도 + 프레임 샘플 |
 | `export_script.py` | `shots.json` → `script.md` + `narration.srt` |
+| `tts_narrate.py` | 대본 → 나레이션 음성 + 실측 자막 (씬 단위 스케일 보정) |
+| `mux_av.py` | 씬 결합 + 음성 + 자막(트랙/태움) → `<ep>_FINAL.mp4` |
 | `deliver.py` | 씬 합치기 + 납품 폴더 구성 |
 
 전부 `--json`을 지원합니다.

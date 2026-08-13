@@ -29,6 +29,17 @@ import re
 import sys
 from pathlib import Path
 
+
+# Windows consoles default to cp949 here, and every one of these scripts prints
+# Korean. Without this, a run dies with UnicodeEncodeError *after* it has already
+# written its output files — the confusing failure mode of looking broken while
+# actually having succeeded.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 # Measured against typical Korean explanatory narration. Lower it for a slower,
 # more deliberate delivery; raise it for brisk tutorial pacing.
 DEFAULT_RATE = 5.5  # syllables per second
