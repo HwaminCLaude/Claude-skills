@@ -54,7 +54,8 @@ WARN은 그대로 진행한다: codex 없음 → 이미지 생성 노드 off, `n
 | `index` | `IndexError`/`KeyError` | `RaeTex`는 정수가 아니라 **원문 문자열**로 조각을 꺼낸다. `items=` 사용 시 매핑이 어긋날 수 있으니 조각을 더 잘게 나눠 넘길 것 |
 | `fork_only` | `AttributeError ... method_names` | `SkewedAnimations`는 순정에서 못 쓴다. 다른 애니메이션으로 교체 |
 | `code` | `NameError`/`TypeError`/`SyntaxError` | 생성된 씬 코드 버그. 트레이스백 위치를 고치고 다시 스모크 |
-| `tex_race` | `WinError 32`, "다른 프로세스가 파일을 사용" | **병렬 렌더 경합.** 씬들이 `media/Tex/`를 공유해서, 한 워커가 지우려는 `.log`를 다른 워커가 잡고 있다. `render.py`가 해당 씬만 자동으로 직렬 재시도한다(그때는 LaTeX 출력이 이미 캐시돼 빠르다). 수동 렌더 중이라면 `--jobs 1`로 한 번 돌려 Tex 캐시를 채운 뒤 병렬로 가면 된다 |
+| `svg_race` | `ParseError: no element found` | **병렬 렌더 경합 #2 — 텍스트 SVG 캐시.** 여러 씬에 **똑같은 문자열의 `Text`** 가 들어 있으면(머리말, 배지, 공통 캡션) manimpango가 같은 캐시 SVG를 동시에 쓴다. 한쪽이 절반만 쓴 파일을 다른 쪽이 읽어 XML 파싱이 깨진다. `render.py`가 자동으로 직렬 재시도한다. **씬 코드를 고칠 필요 없다** — `t2f`에 더미 키를 넣어 해시를 흩는 우회는 쓰지 말 것 |
+| `tex_race` | `WinError 32`, "다른 프로세스가 파일을 사용" | **병렬 렌더 경합 #1 — LaTeX.** 씬들이 `media/Tex/`를 공유해서, 한 워커가 지우려는 `.log`를 다른 워커가 잡고 있다. `render.py`가 해당 씬만 자동으로 직렬 재시도한다(그때는 LaTeX 출력이 이미 캐시돼 빠르다). 수동 렌더 중이라면 `--jobs 1`로 한 번 돌려 Tex 캐시를 채운 뒤 병렬로 가면 된다 |
 
 자동 수정은 **최대 3회**. 초과하면 그 구간을 단순한 연출로 낮추거나 사용자에게 올린다.
 

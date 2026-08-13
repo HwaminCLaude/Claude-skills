@@ -51,6 +51,12 @@ ERROR_SIGNATURES: list[tuple[str, str, str]] = [
     (r"WinError 32|PermissionError.*Tex|다른 프로세스가 파일을 사용",
      "tex_race",
      "병렬 렌더가 공유 media/Tex/에서 경합했습니다. 해당 씬만 직렬로 재시도합니다."),
+    # 같은 문자열의 Text를 여러 씬이 동시에 만들면 manimpango가 같은 캐시 SVG를
+    # 동시에 쓴다. 한쪽이 절반만 쓴 파일을 다른 쪽이 읽어 파싱이 깨진다.
+    # 배지·머리말처럼 모든 씬에 공통으로 들어가는 텍스트에서 잘 터진다.
+    (r"ParseError.*no element found|xml\.etree.*ParseError|SVGElementNotImplementedError",
+     "svg_race",
+     "병렬 렌더가 공유 텍스트 SVG 캐시에서 경합했습니다. 해당 씬만 직렬로 재시도합니다."),
     (r"latex error|LaTeX Error|pdflatex.*not found|No such file.*\.tex",
      "latex",
      "LaTeX 실패. MiKTeX 설치와 PATH를 확인하고 "
@@ -169,15 +175,18 @@ def main() -> int:
     else:
         results = [render_one(episode, python, s, args.quality, env) for s in scenes]
 
-    # Scenes that lost the media/Tex/ race get one serial retry. By now the other
-    # workers have exited and the LaTeX output they compiled is cached, so the
-    # retry is both uncontended and fast.
-    racers = [r for r in results if r.error_kind == "tex_race"]
+    # Scenes that lost a shared-cache race get one serial retry. Two caches can
+    # collide under --jobs: media/Tex/ (LaTeX) and the text SVG cache (manimpango).
+    # By the time we retry, the other workers have exited and whatever they were
+    # writing is complete, so the retry is both uncontended and fast.
+    RACE_KINDS = ("tex_race", "svg_race")
+    racers = [r for r in results if r.error_kind in RACE_KINDS]
     if racers:
-        print(f"[render] {len(racers)} scene(s) hit the LaTeX race — retrying serially",
-              flush=True)
+        kinds = ", ".join(sorted({r.error_kind for r in racers}))
+        print(f"[render] {len(racers)} scene(s) hit a shared-cache race ({kinds}) "
+              f"— retrying serially", flush=True)
         for i, r in enumerate(results):
-            if r.error_kind == "tex_race":
+            if r.error_kind in RACE_KINDS:
                 results[i] = render_one(episode, python, r.scene, args.quality, env)
 
     total = round(time.time() - started, 1)
