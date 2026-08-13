@@ -83,6 +83,24 @@ python scripts/estimate_narration.py --shots shots.json --write
 
 스키마와 톤 규칙: `references/narration.md` §2~3
 
+### Stage 3.5 — 계산 (수치를 다루는 영상만)
+
+영상이 상관계수·적합도·p값 같은 **수치를 말한다면**, 그 숫자는 계산 결과여야 한다. 그럴듯한 자릿수를 쓰는 순간 영상 전체가 무너진다.
+
+```bash
+python scripts/compute_facts.py --root <root>          # 분석 실행 + 검증
+python scripts/compute_facts.py --root <root> --check  # 검증만
+```
+
+규약 한 줄: **`analysis/`가 계산하고, `facts.json`이 기록하고, 씬은 `facts.json`에서만 읽는다.** 손으로 옮겨 적는 경로는 없다.
+
+- `facts.json` 필수 키: `source`(데이터 출처) · `criteria`(연구자가 정한 판정 기준 — 계산값과 분리) · `invariants`(수학적 검산, 하나라도 false면 실패)
+- 씬 코드는 `FACTS["efa"]["kmo"]` 처럼 읽어 쓴다. **하드코딩 금지** — 분석을 다시 돌려도 영상이 안 바뀐다
+- 라이브러리 호출 한 줄은 화면에 못 올린다. `numpy`/`scipy`로 **직접 구현**하고 라이브러리는 교차검증 보조로만
+- 연구 데이터에는 식별정보가 들어 있을 수 있다. **원본은 읽기만** 하고 비식별 사본으로 작업한다
+
+자세히: `references/computed-facts.md` (불변량 목록, 개인정보 절차, **결과표 3장면 세트**)
+
 ### Stage 4 — 에셋 + 씬 코드
 
 ```bash
@@ -184,6 +202,7 @@ C:\manimwork\<slug>\
 | `setup_env.py` | uv 프로젝트 + manim/raenim 설치 + noise shim |
 | `parse_paper.py` | 논문 PDF → `paper.json` + `paper.txt` (섹션·수식·캡션·그림) |
 | `parse_code.py` | 노트북·소스 → `codebase.json` (섹션·정의·**shape 흐름 지점**) |
+| `compute_facts.py` | `analysis/` 실행 → `facts.json` 검증 (수치 영상의 유일한 숫자 출처) |
 | `estimate_narration.py` | 낭독 시간 추정 → `est_sec`/`run_time`/`wait` |
 | `scaffold_video.py` | 에피소드 폴더 + main.py 스텁 + shots.json |
 | `crop_figure.py` | 논문 PDF에서 figure 추출 (임베드 이미지 / 영역 렌더) |
@@ -202,6 +221,7 @@ C:\manimwork\<slug>\
 - `references/imcommit-style-guide.md` — 연출 어휘, 파일 구조, 관용구, 순정 manim 회피 목록
 - `references/raenim-api.md` — raenim 전체 API와 함정
 - `references/narration.md` — 편성 규칙, 대본 톤, shots.json 스키마
+- `references/computed-facts.md` — 계산 노드, 불변량, 개인정보 절차, 결과표 3장면 세트
 - `references/generated-imagery.md` — 생성 이미지 정책과 사용법
 - `references/troubleshooting.md` — preflight 복구, 렌더 오류 6종, 자주 밟는 함정
 
