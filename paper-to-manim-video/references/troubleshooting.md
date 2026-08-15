@@ -97,3 +97,35 @@ python scripts/mux_av.py     --episode <ep> --quality qh --burn   # 자막 태�
 **렌더가 너무 느림** — 스모크는 반드시 `-ql`. 본번은 `--jobs 3`으로 구간 병렬. 캐시(애니메이션 해시 = partial movie 파일명)는 켜 두어 수정한 구간만 다시 그려지게 한다.
 
 **한글 경로** — 순정 manim은 shell을 거치지 않아 대체로 안전하지만, MiKTeX 임시 파일에서 사고가 난다. 프로젝트 루트는 `C:\manimwork\<slug>` 같은 ASCII 경로로 유지한다.
+
+## 5. 조용히 틀리는 것들 — 예외도 경고도 없다
+
+렌더가 성공하고 길이도 맞는데 화면이 틀린다. `verify_output.py`는 전부 통과한다.
+**`lint_scenes.py`가 아래 8종을 잡는다.** 나머지는 프레임을 눈으로 봐야 한다 →
+전체 절차는 `references/visual-qa.md`.
+
+| 무엇 | 왜 조용한가 | 어떻게 |
+|---|---|---|
+| 고정폭 헬퍼(`mono`)에 한글 | 글립이 없어 **두부(□)**만 그려진다 | `kr()` 또는 헬퍼에 한글 폴백 |
+| 이모지 `🔍 🔒 ⚡` | **점이 하나도 없는 mobject**가 된다. `move_to`가 무효가 되고, `next_to`로 붙인 이웃까지 원점으로 끌려간다 | 도형으로 그린다 |
+| `Line(path_arc=x).set_opacity(a)` | `set_opacity`가 **면(fill)까지** 칠해 호가 흰 덩어리가 된다 | `set_stroke(opacity=a)` |
+| `box()` + `set_color()` | 배경까지 칠해진다 | 스트로크·텍스트만 바꾸는 `recolor()` |
+| 같은 `playw`에 `FadeIn(x)` + `Indicate(x)` | 등장이 취소돼 **값이 사라진다** | 샷을 나누거나 `Flash`(대상을 안 건드린다) |
+| `code.highlight()`의 `disappear` 미재생 | 코드가 사라진 뒤 **빨간 강조 글자만 남는다** | 코드 지우는 `playw`에 함께 넣는다 |
+| 흩어진 점들의 `VGroup.scale()` | 크기가 아니라 **위치**를 벌린다 | `*[d.animate.scale(k) for d in dots]` |
+| 행·열 동시 강조의 교차 칸 | 같은 mobject에 애니메이션이 두 번 걸린다 | `{id(m): m ...}.values()`로 합친다 |
+| `VGroup`에 `ImageMobject` | 담기지 않는다 | `Group(...)` |
+| raenim `SurroundingRect(대상)` | manim `SurroundingRectangle`과 **다른 클래스**다 | manim 쪽을 쓴다 |
+
+### 자리 다툼 (린터가 못 잡는다 — 눈으로)
+
+프레임은 **x ∈ [−7.11, 7.11], y ∈ [−4, 4]**. 배치 전에 이미 있는 것의 범위를 센다.
+
+- `next_to`는 기준물 **가운데**에 맞춘다. 좁은 기준물 옆의 긴 한글 라벨은 화면 밖으로 나간다
+  → `align_to(ref, LEFT)`를 같이 걸거나 `"앞줄\n뒷줄"`로 접는다
+- `to_edge(RIGHT)`에 붙은 것 **오른쪽**에는 자리가 없다 → 아래로 뺀다
+- 논문 그림(흰 배경) **위에** 회색·민트 라벨을 얹으면 안 읽힌다 → 바깥에
+- 이미 화면에 있는 셀 위에 같은 값을 다시 `FadeIn` 하면 글자가 포개진다
+  → 그 셀을 변수로 잡아 `Flash` + `animate.scale`
+- 막대 높이는 **두 번 곱해진다**: `set_bar_heights(g, [v*k])`의 실제 높이는 `v·k·unit(2.4)`.
+  가장 큰 값으로 미리 계산해 프레임 안에 드는지 확인한다

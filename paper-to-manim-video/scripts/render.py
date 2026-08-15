@@ -57,6 +57,9 @@ ERROR_SIGNATURES: list[tuple[str, str, str]] = [
     (r"ParseError.*no element found|xml\.etree.*ParseError|SVGElementNotImplementedError",
      "svg_race",
      "병렬 렌더가 공유 텍스트 SVG 캐시에서 경합했습니다. 해당 씬만 직렬로 재시도합니다."),
+    (r"(?s)(FileNotFoundError|PermissionError).*media.*texts.*\.svg",
+     "svg_race",
+     "병렬 렌더가 공유 텍스트 SVG 캐시 파일을 동시에 정리했습니다. 해당 씬만 직렬로 재시도합니다."),
     (r"latex error|LaTeX Error|pdflatex.*not found|No such file.*\.tex",
      "latex",
      "LaTeX 실패. MiKTeX 설치와 PATH를 확인하고 "

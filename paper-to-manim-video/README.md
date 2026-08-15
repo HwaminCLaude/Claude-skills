@@ -70,23 +70,43 @@ Claude Code에서 그냥 이렇게 말하면 됩니다.
 임커밋처럼 만들어줘
 ```
 
-체크포인트가 셋 있습니다 — **CP1 편성안 승인 → CP2 대본 검토 → CP3 최종 검수**.
-CP3에는 생성 이미지를 쓴 컷과 논문 수치를 인용한 컷이 자동으로 올라옵니다.
+체크포인트가 넷 있습니다 — **CP0 제작 사양 → CP1 편성안 승인 → CP2 대본 검토 → CP3 최종 검수**.
+
+CP0에서는 편성 템플릿을 고릅니다. 논문·코드 분량을 보고 권장안이 맨 위에 오지만
+선택은 사용자가 하고, "직접 지정"으로 원하는 구성을 적어도 됩니다.
+한 번 정한 문항은 다시 묻지 않습니다.
+
+```bash
+python scripts/list_templates.py        # 현재 편성 템플릿 목록
+```
+
+| 템플릿 | 편수 | 언제 |
+|---|---|---|
+| `series-5` 표준 | 5편 · 30~35분 | 논문과 코드가 둘 다 충실할 때 |
+| `series-3` 압축 | 3편 · 18~21분 | 코드가 작거나 논문이 짧을 때 |
+| `single` 단편 | 1편 · 6~8분 | 개념 하나만 짧게 |
+| `code-first` | 4편 · 24~30분 | 코드가 주인공이고 논문은 근거일 때 |
+| `results-first` | 3편 · 18~22분 | 재현·벤치마크가 목적일 때 |
+
+새 템플릿은 `assets/series_templates.local.json`에 넣으면 선택지에 자동으로 뜹니다.
+이 파일은 스킬을 업데이트해도 지워지지 않습니다.
 
 ---
 
 ## 파이프라인
 
 ```
-Stage 0  환경 13항목 사전 검증 (실패 시 재검증 최대 3회)
-Stage 1  입력 판정 → paper.json / codebase.json
-Stage 2  시리즈 편성안                      [CP1]
-Stage 3  나레이션 대본 + shots.json          [CP2]
-Stage 4  에셋 확보 + 씬 코드 생성
-Stage 5  480p15 스모크 렌더 + 오류 자동 수정
-Stage 6  1080p60 본번 렌더 (구간 병렬)
-Stage 7  나레이션 음성(TTS) + 자막 + 최종 mux
-Stage 8  길이 정합 검증 + 납품 폴더 구성      [CP3]
+Stage 0    환경 13항목 사전 검증 (실패 시 재검증 최대 3회)
+Stage 1    입력 판정 → paper.json / codebase.json
+Stage 1.5  제작 사양 (편성 템플릿 등)        [CP0]
+Stage 2    시리즈 편성안                     [CP1]
+Stage 3    나레이션 대본 + shots.json         [CP2]
+Stage 4    에셋 확보 + 씬 코드 생성
+Stage 5    480p15 스모크 렌더 + 오류 자동 수정
+Stage 5.5  정적 린트 — 렌더는 되는데 화면이 틀리는 조합 10종
+Stage 6    1080p60 본번 렌더 (구간 병렬)
+Stage 7    나레이션 음성(TTS) + 자막 + 최종 mux
+Stage 8    길이 정합 + 프레임 스윕 + 납품 폴더  [CP3]
 ```
 
 ## 음성과 자막이 자동으로 맞는 이유
@@ -143,8 +163,11 @@ self.playw(Write(title), run_time=1.5, wait=wait)
 | `scaffold_video.py` | 에피소드 폴더 + `main.py` 스텁 + `shots.json` |
 | `crop_figure.py` | 논문 PDF에서 figure 추출 |
 | `gen_image.py` | Codex 이미지 생성 (능력 게이트 + 가드레일) |
+| `list_templates.py` | 편성 템플릿 목록 → CP0 선택지 (`.local.json` 추가분 자동 병합) |
+| `lint_scenes.py` | **렌더 전** 정적 검사 10종 — 렌더는 되는데 화면이 틀리는 조합 |
 | `render.py` | 스모크→본번 렌더, 구간 병렬, 오류 분류, LaTeX 경합 자동 재시도 |
 | `verify_output.py` | 길이 정합 + 해상도 + 프레임 샘플 |
+| `sweep_frames.py` | **렌더 후** 구간당 35%/70%/마지막 프레임 추출 (눈으로 볼 것) |
 | `export_script.py` | `shots.json` → `script.md` + `narration.srt` |
 | `tts_narrate.py` | 대본 → 나레이션 음성 + 실측 자막 (씬 단위 스케일 보정) |
 | `mux_av.py` | 씬 결합 + 음성 + 자막(트랙/태움) → `<ep>_FINAL.mp4` |
@@ -154,13 +177,44 @@ self.playw(Write(title), run_time=1.5, wait=wait)
 
 ## 참고 문서 (`references/`)
 
+- `production-spec.md` — CP0 문항과 답이 뒤 단계에 미치는 영향, 템플릿 추가법
+- `scene-templates.md` — 검증된 씬 배치 8종 (좌표 포함)
+- `visual-qa.md` — 린트 규칙 10종 + 프레임 스윕 절차
 - `imcommit-style-guide.md` — 연출 어휘, 파일 구조, 관용구, 순정 manim에서의 회피 목록
 - `raenim-api.md` — raenim 전체 API와 함정
 - `narration.md` — 편성 규칙, 대본 톤, `shots.json` 스키마
+- `computed-facts.md` — 계산 노드, 불변량, 결과표 3장면 세트
 - `generated-imagery.md` — 생성 이미지 정책과 사용법
 - `troubleshooting.md` — preflight 복구, 렌더 오류 6종, 자주 밟는 함정
 
 ---
+
+## 렌더가 성공해도 화면은 틀릴 수 있습니다
+
+두 시리즈(79구간)를 만들며 **길이·해상도 검증을 전부 통과하고도 화면이 틀린 결함이 19건**
+나왔습니다. 예외도 경고도 나지 않아 `verify_output.py`로는 한 건도 못 잡습니다.
+
+그래서 방어선을 둘로 나눴습니다.
+
+**렌더 전 — `lint_scenes.py`** (특정 API 조합은 항상 틀린다)
+
+| 잡는 것 | 왜 조용한가 |
+|---|---|
+| 고정폭 헬퍼에 한글 | 글립이 없어 **두부(□)**만 그려진다 |
+| 이모지 `🔍 🔒 ⚡` | **점이 하나도 없는 mobject**가 되어 `move_to`가 무효화되고, `next_to`로 붙인 이웃까지 원점으로 끌려간다 |
+| `Line(path_arc=x).set_opacity()` | `set_opacity`가 면(fill)까지 칠해 호가 **흰 덩어리**가 된다 |
+| 같은 `playw`에 `FadeIn` + `Indicate` | 등장이 취소돼 **값이 사라진다** |
+| `highlight()`의 `disappear` 미재생 | 코드가 사라진 뒤 **빨간 강조 글자만 남는다** |
+
+**렌더 후 — `sweep_frames.py` + 눈** (자리 다툼은 정적으로 못 잡는다)
+
+구간마다 35%·70%·마지막 세 지점을 뽑습니다. 41구간이면 123장입니다.
+글자 겹침, 화면 밖 잘림, 사라졌어야 할 찌꺼기는 이 단계에서만 보입니다.
+
+```bash
+python scripts/lint_scenes.py  --root C:/manimwork/my-paper     # ERROR 0이 될 때까지
+python scripts/sweep_frames.py --root C:/manimwork/my-paper     # 그리고 눈으로 본다
+```
 
 ## 알아둘 함정
 

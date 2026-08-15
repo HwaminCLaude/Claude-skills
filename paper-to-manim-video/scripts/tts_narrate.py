@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -171,7 +172,10 @@ def main() -> int:
         if args.fit and t["audio"] > t["slot"] - 0.05 and t["slot"] > 0.5:
             # Speak faster rather than run over the animation it belongs to.
             need = t["audio"] / (t["slot"] - 0.05)
-            pct = min(60, int(round((need - 1) * 100)) + 2)
+            match = re.fullmatch(r"([+-]?)(\d+)%", args.rate.strip())
+            base_pct = int(match.group(2)) * (-1 if match and match.group(1) == "-" else 1) if match else 0
+            target_factor = (1 + base_pct / 100) * need
+            pct = min(60, int(round((target_factor - 1) * 100)) + 2)
             if pct > 0:
                 asyncio.run(synth(t["text"], clip, args.voice, f"+{pct}%"))
                 t["audio"] = duration_of(clip)

@@ -1,0 +1,76 @@
+{
+  "_note": "편성 템플릿. 편수와 흐름의 출발점이지 제약이 아니다. 논문의 실제 절 구성에 맞춰 제목·구간을 다시 짠다. 자세히: references/production-spec.md",
+  "_length_rule": "한 편 5~8분, 구간 4~11개, 구간 하나 90초 이하",
+
+  "series-5": {
+    "label": "5편 표준",
+    "recommended_for": "논문과 코드가 둘 다 충실할 때",
+    "total_minutes": "30~35",
+    "episodes": [
+      {"slug": "ep01_why", "role": "문제", "asks": "왜 기존 방식으로는 안 되는가",
+       "sources": "서론, 관련 연구, 비교 표, 아키텍처 그림", "scenes": "5~7"},
+      {"slug": "ep02_core", "role": "핵심 기법", "asks": "이 논문의 한 문장짜리 아이디어는 무엇인가",
+       "sources": "핵심 절, 대표 수식, 그 수식의 그림", "scenes": "6~8"},
+      {"slug": "ep03_parts", "role": "나머지 부품", "asks": "그 아이디어를 돌아가게 만드는 것들",
+       "sources": "부수 절(정규화·초기화·마스킹 등), 보조 수식", "scenes": "6~9"},
+      {"slug": "ep04_results", "role": "결과와 비용", "asks": "얼마나 좋아졌고 무엇을 치렀나",
+       "sources": "실험 절, 결과 표, 절제 실험, 한계", "scenes": "7~10"},
+      {"slug": "ep05_code", "role": "코드 대조", "asks": "논문의 수식은 코드 어디에 있는가",
+       "sources": "상류 코드, 논문과 갈리는 지점, 검산", "scenes": "8~11"}
+    ]
+  },
+
+  "series-3": {
+    "label": "3편 압축",
+    "recommended_for": "코드가 작거나 논문이 짧을 때",
+    "total_minutes": "18~21",
+    "episodes": [
+      {"slug": "ep01_idea", "role": "문제와 기법", "asks": "무엇이 문제였고 어떻게 풀었나",
+       "sources": "서론 + 핵심 절 + 대표 수식", "scenes": "6~8"},
+      {"slug": "ep02_results", "role": "결과와 한계", "asks": "얼마나 좋아졌나",
+       "sources": "실험 절, 결과 표, 한계", "scenes": "6~8"},
+      {"slug": "ep03_code", "role": "코드 대조", "asks": "수식이 코드 어디에 있는가",
+       "sources": "상류 코드, 갈리는 지점", "scenes": "6~9"}
+    ]
+  },
+
+  "single": {
+    "label": "단편 1편",
+    "recommended_for": "개념 하나만 짧게",
+    "total_minutes": "6~8",
+    "episodes": [
+      {"slug": "ep01_one", "role": "한 아이디어", "asks": "이것 하나만 확실히",
+       "sources": "핵심 절 + 수식 + 그림 하나", "scenes": "5~7"}
+    ]
+  },
+
+  "code-first": {
+    "label": "코드 중심 4편",
+    "recommended_for": "코드가 주인공이고 논문은 근거일 때",
+    "total_minutes": "24~30",
+    "episodes": [
+      {"slug": "ep01_map", "role": "코드 지도", "asks": "이 저장소는 어떻게 생겼나",
+       "sources": "디렉터리 구조, 진입점, 데이터 흐름", "scenes": "5~7"},
+      {"slug": "ep02_core", "role": "핵심 함수", "asks": "실제 계산은 어디서 일어나나",
+       "sources": "핵심 모듈, shape 흐름 지점", "scenes": "6~9"},
+      {"slug": "ep03_paper", "role": "논문 대조", "asks": "논문과 다른 곳은 어디인가",
+       "sources": "논문 수식 ↔ 코드, 기본값·근사·구현 편의", "scenes": "6~9"},
+      {"slug": "ep04_run", "role": "돌려보기", "asks": "직접 돌리면 무엇이 나오나",
+       "sources": "analysis/facts.json, 검산, 노트북", "scenes": "5~8"}
+    ]
+  },
+
+  "results-first": {
+    "label": "결과 중심 3편",
+    "recommended_for": "재현·벤치마크가 목적일 때",
+    "total_minutes": "18~22",
+    "episodes": [
+      {"slug": "ep01_what", "role": "무엇이 좋아졌나", "asks": "숫자로 무엇이 달라졌나",
+       "sources": "결과 표 전부, 비교 대상, 측정 기준", "scenes": "6~9"},
+      {"slug": "ep02_why", "role": "왜 되나", "asks": "그 숫자를 만든 기법은 무엇인가",
+       "sources": "핵심 절, 절제 실험", "scenes": "6~9"},
+      {"slug": "ep03_limits", "role": "한계와 비용", "asks": "어디까지 믿을 수 있나",
+       "sources": "한계 절, 학습 비용, 재현 조건", "scenes": "5~8"}
+    ]
+  }
+}
