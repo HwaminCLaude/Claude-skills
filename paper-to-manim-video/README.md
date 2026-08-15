@@ -87,6 +87,7 @@ python scripts/list_templates.py        # 현재 편성 템플릿 목록
 | `single` 단편 | 1편 · 6~8분 | 개념 하나만 짧게 |
 | `code-first` | 4편 · 24~30분 | 코드가 주인공이고 논문은 근거일 때 |
 | `results-first` | 3편 · 18~22분 | 재현·벤치마크가 목적일 때 |
+| `walkthrough-6` 손계산 | 6편 · 42~50분 | 예시 숫자가 모델 내부를 통째로 지나가는 과정을 **시청자가 따라 계산**하게 할 때 |
 
 새 템플릿은 `assets/series_templates.local.json`에 넣으면 선택지에 자동으로 뜹니다.
 이 파일은 스킬을 업데이트해도 지워지지 않습니다.
@@ -103,7 +104,7 @@ Stage 2    시리즈 편성안                     [CP1]
 Stage 3    나레이션 대본 + shots.json         [CP2]
 Stage 4    에셋 확보 + 씬 코드 생성
 Stage 5    480p15 스모크 렌더 + 오류 자동 수정
-Stage 5.5  정적 린트 — 렌더는 되는데 화면이 틀리는 조합 10종
+Stage 5.5  정적 린트 — 렌더는 되는데 화면이 틀리는 조합 11종
 Stage 6    1080p60 본번 렌더 (구간 병렬)
 Stage 7    나레이션 음성(TTS) + 자막 + 최종 mux
 Stage 8    길이 정합 + 프레임 스윕 + 납품 폴더  [CP3]
@@ -151,6 +152,32 @@ self.playw(Write(title), run_time=1.5, wait=wait)
 
 ---
 
+## 손계산 워크스루 (`walkthrough-6`)
+
+예시 데이터 한 벌이 모델 내부를 통째로 지나가는 시리즈입니다.
+**시청자가 계산기를 들고 화면의 숫자를 따라 계산해도 끝까지 값이 맞습니다.**
+
+Transformer로 한 번 완주했습니다(6편 · 47분 50초, d_model=4 · 헤드 2 · 층 1 · 파라미터 396개):
+
+| 장치 | 하는 일 |
+|---|---|
+| 반올림 규약 | 각 단계 결과를 소수 둘째 자리로 자른 뒤 다음 단계에 넣습니다. 그래야 화면 숫자만으로 손계산이 이어집니다 |
+| 반올림 비용 측정 | 자르지 않은 경로와 비교 — 인코더 출력 차이 0.0134, 첫 로짓 0.0317, **결론은 동일** |
+| 상류 구현과 대조 | 같은 가중치를 저장소 모듈에 실어 돌려 차이 0.0134 확인 |
+| 불변량 | 수학 검산 + **대본이 하는 주장**까지 14개. 하나라도 깨지면 분석이 실패합니다 |
+| 워크시트 노트북 | 계산 노드를 통째로 실어 정답표를 만듭니다 — 손으로 옮겨 적는 경로가 없습니다 |
+
+```bash
+cp assets/walkthrough_template/walkthrough_engine.py <root>/analysis/walkthrough.py
+python <root>/analysis/walkthrough.py      # 불변량이 전부 통과할 때까지
+```
+
+그대로 돌아가는 완성 예: `assets/walkthrough_template/example_transformer.py`
+설계 지침(장난감 크기 고르기, 실제로 막혔던 세 가지, 가중치 격자 탐색):
+`references/hand-calc-walkthrough.md`
+
+---
+
 ## 스크립트
 
 | 스크립트 | 용도 |
@@ -164,7 +191,7 @@ self.playw(Write(title), run_time=1.5, wait=wait)
 | `crop_figure.py` | 논문 PDF에서 figure 추출 |
 | `gen_image.py` | Codex 이미지 생성 (능력 게이트 + 가드레일) |
 | `list_templates.py` | 편성 템플릿 목록 → CP0 선택지 (`.local.json` 추가분 자동 병합) |
-| `lint_scenes.py` | **렌더 전** 정적 검사 10종 — 렌더는 되는데 화면이 틀리는 조합 |
+| `lint_scenes.py` | **렌더 전** 정적 검사 11종 — 렌더는 되는데 화면이 틀리는 조합 |
 | `render.py` | 스모크→본번 렌더, 구간 병렬, 오류 분류, LaTeX 경합 자동 재시도 |
 | `verify_output.py` | 길이 정합 + 해상도 + 프레임 샘플 |
 | `sweep_frames.py` | **렌더 후** 구간당 35%/70%/마지막 프레임 추출 (눈으로 볼 것) |
@@ -179,11 +206,13 @@ self.playw(Write(title), run_time=1.5, wait=wait)
 
 - `production-spec.md` — CP0 문항과 답이 뒤 단계에 미치는 영향, 템플릿 추가법
 - `scene-templates.md` — 검증된 씬 배치 8종 (좌표 포함)
-- `visual-qa.md` — 린트 규칙 10종 + 프레임 스윕 절차
+- `visual-qa.md` — 린트 규칙 11종 + 프레임 스윕 절차
 - `imcommit-style-guide.md` — 연출 어휘, 파일 구조, 관용구, 순정 manim에서의 회피 목록
 - `raenim-api.md` — raenim 전체 API와 함정
 - `narration.md` — 편성 규칙, 대본 톤, `shots.json` 스키마
 - `computed-facts.md` — 계산 노드, 불변량, 결과표 3장면 세트
+- `hand-calc-walkthrough.md` — 손계산 워크스루(`walkthrough-6`): 장난감 크기 고르기, 반올림 규약,
+  가중치 설계와 격자 탐색, 워크시트 노트북, 배치 함정
 - `generated-imagery.md` — 생성 이미지 정책과 사용법
 - `troubleshooting.md` — preflight 복구, 렌더 오류 6종, 자주 밟는 함정
 

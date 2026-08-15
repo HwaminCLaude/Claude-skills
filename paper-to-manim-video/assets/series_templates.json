@@ -60,6 +60,27 @@
     ]
   },
 
+  "walkthrough-6": {
+    "label": "손계산 워크스루 6편",
+    "recommended_for": "예시 데이터 한 벌이 모델 내부를 통째로 지나가는 과정을 시청자가 계산기를 들고 따라 계산하게 할 때. 논문 읽기 시리즈 뒤에 붙이면 좋다",
+    "total_minutes": "42~50",
+    "requires": "analysis/walkthrough.py — 장난감 크기 모델의 전 단계 수치. references/hand-calc-walkthrough.md 를 먼저 읽는다",
+    "episodes": [
+      {"slug": "ep01_setup", "role": "무대", "asks": "무엇을 예시로 삼고, 얼마나 줄였고, 가중치는 누가 정했나",
+       "sources": "장난감 설정 표, 사전, 입력 만들기(임베딩·정규화 등 전처리)", "scenes": "4~6"},
+      {"slug": "ep02_first_a", "role": "첫 블록 ①", "asks": "재료를 어떻게 만들고 무엇을 비교하나",
+       "sources": "가중치 행렬 곱하기, 쪼개기, 점수 계산, 확률화", "scenes": "4~6"},
+      {"slug": "ep03_first_b", "role": "첫 블록 ②", "asks": "그 비율로 무엇을 섞고 어떻게 되돌리나",
+       "sources": "가중합, 합치기, 잔차, 정규화, 비선형(ReLU 등)", "scenes": "5~7"},
+      {"slug": "ep04_second", "role": "두 번째 블록", "asks": "앞 블록의 결과를 받아 무엇이 더 일어나나",
+       "sources": "디코더/후반부 고유 연산(마스킹·조건부 입력 등)", "scenes": "4~6"},
+      {"slug": "ep05_output", "role": "출력", "asks": "숫자가 어떻게 답이 되나",
+       "sources": "최종 사영, 확률화, 고르기, 반복 스텝", "scenes": "4~6"},
+      {"slug": "ep06_check", "role": "검산", "asks": "손계산이 실제 코드와 같은가",
+       "sources": "워크시트 노트북, 실제 구현과 대조, 반올림 오차, 진짜 크기와의 차이", "scenes": "5~7"}
+    ]
+  },
+
   "results-first": {
     "label": "결과 중심 3편",
     "recommended_for": "재현·벤치마크가 목적일 때",

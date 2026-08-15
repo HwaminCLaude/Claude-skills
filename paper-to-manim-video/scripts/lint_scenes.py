@@ -214,6 +214,27 @@ def lint_file(path: Path, mono_falls_back: bool = False):
                     "보통 끝 상태는 맞지만 등장 연출이 사라진다",
                     "프레임으로 확인한다. 연출이 필요하면 샷을 나눈다"))
 
+        # ── R7b  강조 사각형을 playw 안에서 인라인으로 만들면 나중에 못 지운다
+        #         self.playw(Create(row_box(tab, 2)))  ← 변수가 없어 FadeOut을 못 건다.
+        #         표를 지워도 빈 사각형만 화면에 남는다. 손계산 편에서 3곳 밟았다.
+        if isinstance(node, ast.Call) and _callee(node) in ("playw", "playwl"):
+            for a in node.args:
+                if not isinstance(a, ast.Call) or _callee(a) not in (
+                        "Create", "FadeIn", "DrawBorderThenFill",
+                        "GrowFromCenter", "ShowCreation"):
+                    continue
+                if not a.args or not isinstance(a.args[0], ast.Call):
+                    continue
+                inner = _callee(a.args[0])
+                if inner in ("row_box", "col_box", "cell_box", "on_fig1",
+                             "SurroundingRectangle", "SurroundingRect"):
+                    out.append(Finding(
+                        "WARN", "inline-highlight-rect", rel, a.lineno,
+                        f"강조 사각형 `{inner}(...)`을 인라인으로 만들었다 — "
+                        "변수가 없어 나중에 지울 수 없다",
+                        "변수로 받아 두고 뒤에서 FadeOut 한다. "
+                        "구간의 마지막 샷이라면 무시해도 된다"))
+
         # ── R8  code.highlight()의 disappear를 안 재생하면 강조 글자가 남는다
         if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call):
             if _callee(node.value) == "highlight" and len(node.targets) == 1:

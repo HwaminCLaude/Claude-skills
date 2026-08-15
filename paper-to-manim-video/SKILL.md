@@ -1,6 +1,6 @@
 ---
 name: paper-to-manim-video
-description: 논문 PDF나 코드(둘 중 하나 또는 둘 다)를 받아 임커밋(3Blue1Brown 계열) 스타일의 한국어 교육 영상을 만든다. 나레이션 대본과 Manim 씬 코드를 하나의 shot list에서 함께 생성해 대본 낭독 시간과 영상 길이를 자동으로 맞추고, 실제로 렌더해 mp4까지 뽑는다. 5~8분 단편 3~5편 시리즈가 기본. 사용자가 "논문으로 영상 만들어줘", "내 논문 유튜브 영상", "임커밋처럼 만들어줘", "manim으로 논문 설명 영상", "코드 설명 영상이랑 대본", "논문 영상 대본 써줘"라고 할 때 사용한다. 노션 정리는 pdf-to-notion, 코드 가이드북은 code-guidebook-notion을 쓴다.
+description: 논문 PDF나 코드(둘 중 하나 또는 둘 다)를 받아 임커밋(3Blue1Brown 계열) 스타일의 한국어 교육 영상을 만든다. 나레이션 대본과 Manim 씬 코드를 하나의 shot list에서 함께 생성해 대본 낭독 시간과 영상 길이를 자동으로 맞추고, 실제로 렌더해 mp4까지 뽑는다. 5~8분 단편 3~5편 시리즈가 기본. 사용자가 "논문으로 영상 만들어줘", "내 논문 유튜브 영상", "임커밋처럼 만들어줘", "manim으로 논문 설명 영상", "코드 설명 영상이랑 대본", "논문 영상 대본 써줘", "예시 숫자가 모델 내부를 통과하는 과정", "손계산으로 따라할 수 있게", "수식에 숫자 대입해서 영상으로"라고 할 때 사용한다. 노션 정리는 pdf-to-notion, 코드 가이드북은 code-guidebook-notion을 쓴다.
 ---
 
 # Paper to Manim Video
@@ -78,7 +78,7 @@ LaTeX가 없으면 `winget install --id MiKTeX.MiKTeX --silent --accept-package-
 
 | 문항 | 선택지 | 현재 확정값 |
 |---|---|---|
-| **편성** | `list_templates.py`가 JSON에서 읽어온다 (현재 5종) | **매번 묻는다** (논문 분량에 따라 다르다고 함) |
+| **편성** | `list_templates.py`가 JSON에서 읽어온다 (현재 6종) | **매번 묻는다** (논문 분량에 따라 다르다고 함) |
 | **실습** | 노트북 3권 / 1권 / 없음 | 3권 — 묻지 않는다 |
 | **나레이션** | 음성+자막 트랙 / 음성+태운 자막 / 자막만(직접 녹음) | 음성+자막 트랙 — 묻지 않는다 |
 | **검수** | 표준 / 정밀 / 빠름 | 표준 — 묻지 않는다 |
@@ -138,6 +138,31 @@ python scripts/compute_facts.py --root <root> --check  # 검증만
 
 자세히: `references/computed-facts.md` (불변량 목록, 개인정보 절차, **결과표 3장면 세트**)
 
+### Stage 3.5-W — 손계산 워크스루 (`walkthrough-6` 편성을 고른 경우만)
+
+예시 데이터 한 벌이 모델 내부를 통째로 지나가고, **시청자가 계산기를 들고 따라 계산해도
+끝까지 값이 맞는** 시리즈다. 여기서는 계산 노드가 대본보다 **먼저**다 — 대본이 할 수 있는
+말을 숫자가 정하기 때문이다.
+
+```bash
+cp <skill>/assets/walkthrough_template/walkthrough_engine.py analysis/walkthrough.py
+python analysis/walkthrough.py        # 불변량이 전부 통과할 때까지 여기서 머문다
+```
+
+기존 `facts.json`은 건드리지 않는다. **별도 파일**(`walkthrough_facts.json`)로 낸다.
+
+- 크기는 **제곱근이 정수가 되게**(d=4 → √4=2), 내적 축은 2개, 층 1개, 어휘 5~7개
+- 가중치는 학습값이 아니라 **0, ±0.5, ±1, ±2로 우리가 정한 값** — 화면에서 그대로 밝힌다
+- **각 단계 결과를 표시 자릿수로 반올림해 다음 단계에 넣는다**(`q()`).
+  안 하면 "따라 계산해 보세요"가 거짓말이 된다. 반올림 없는 경로와의 차이는 재서 화면에 올린다
+- 불변량에 **대본의 주장**까지 넣는다("A가 B를 가장 크게 본다", "어순이 뒤집힌다")
+- 워크시트 노트북은 `build_worksheet.py`가 `walkthrough.py`를 통째로 실어 만든다 —
+  정답을 손으로 옮겨 적는 경로가 없다
+
+자세히: `references/hand-calc-walkthrough.md` (장난감 크기 고르기, 실제로 막혔던 세 가지,
+가중치 격자 탐색, 배치 함정). 그대로 돌아가는 완성 예:
+`assets/walkthrough_template/example_transformer.py`
+
 ### Stage 4 — 에셋 + 씬 코드
 
 ```bash
@@ -175,7 +200,7 @@ python scripts/render.py --episode <ep> --quality ql
 python scripts/lint_scenes.py --root C:/manimwork/<slug>
 ```
 
-**렌더가 성공하는데 화면이 틀리는** 조합 10종을 잡는다 — 고정폭 폰트에 한글(두부),
+**렌더가 성공하는데 화면이 틀리는** 조합 11종을 잡는다 — 고정폭 폰트에 한글(두부),
 이모지(점 없는 mobject → `move_to` 무효), `Line(path_arc).set_opacity()`(호가 흰 덩어리),
 등장+`Indicate` 동시(값이 사라짐), `highlight()`의 `disappear` 미재생(강조 찌꺼기) 등.
 
@@ -283,7 +308,7 @@ C:\manimwork\<slug>\
 | `crop_figure.py` | 논문 PDF에서 figure 추출 (임베드 이미지 / 영역 렌더) |
 | `gen_image.py` | Codex 이미지 생성 (능력 게이트 + 가드레일) |
 | `list_templates.py` | 편성 템플릿 목록 → CP0 선택지 (`--json`). `.local.json` 추가분 자동 병합 |
-| `lint_scenes.py` | **렌더 전** 정적 검사 10종 — 렌더는 되는데 화면이 틀리는 조합 |
+| `lint_scenes.py` | **렌더 전** 정적 검사 11종 — 렌더는 되는데 화면이 틀리는 조합 |
 | `render.py` | 스모크→본번 렌더, 씬 병렬, 오류 분류, LaTeX 경합 자동 재시도 |
 | `verify_output.py` | 길이 정합 + 해상도 + 프레임 샘플 |
 | `sweep_frames.py` | **렌더 후** 구간당 N지점 프레임 추출 (눈으로 볼 것) |
@@ -298,17 +323,22 @@ C:\manimwork\<slug>\
 
 - `references/production-spec.md` — **CP0 인터랙티브 문항**과 답이 뒤 단계에 미치는 영향
 - `references/scene-templates.md` — **검증된 씬 배치 8종** (좌표 포함). 새로 짜기 전에 여기서 고른다
-- `references/visual-qa.md` — **린트 규칙 10종 + 프레임 스윕 절차**. 조용히 틀리는 결함의 방어선
+- `references/visual-qa.md` — **린트 규칙 11종 + 프레임 스윕 절차**. 조용히 틀리는 결함의 방어선
 - `references/imcommit-style-guide.md` — 연출 어휘, 파일 구조, 관용구, 순정 manim 회피 목록
 - `references/raenim-api.md` — raenim 전체 API와 함정
 - `references/narration.md` — 편성 규칙, 대본 톤, shots.json 스키마
 - `references/computed-facts.md` — 계산 노드, 불변량, 개인정보 절차, 결과표 3장면 세트
+- `references/hand-calc-walkthrough.md` — **손계산 워크스루**(`walkthrough-6` 편성) 전용:
+  장난감 크기 고르기, 반올림 규약, 가중치 설계와 탐색, 워크시트 노트북
 - `references/generated-imagery.md` — 생성 이미지 정책과 사용법
 - `references/troubleshooting.md` — preflight 복구, 렌더 오류 6종, 자주 밟는 함정
 
 ## 템플릿
 
-- `assets/series_templates.json` — 편성 5종 (`series-5` / `series-3` / `single` / `code-first` / `results-first`)
+- `assets/series_templates.json` — 편성 6종 (`series-5` / `series-3` / `single` / `code-first` / `results-first` / `walkthrough-6`)
 - `assets/project_template/` — `main.py` 스텁 + `manim.cfg`
+- `assets/walkthrough_template/` — 손계산 워크스루용: `walkthrough_engine.py`(계산 노드 뼈대) ·
+  `wtcommon.py`(표·계산줄 헬퍼) · `build_worksheet.py`(워크시트 노트북) ·
+  `example_transformer.py`(그대로 돌아가는 완성 예)
 
 관련 스킬: 짧은 개념 클립 하나만 필요하면 `paper-to-obsidian-notion`의 `ref/visualization-manim.md`(10초~1분 클립용)를 보라. 이 스킬은 완결된 편성 영상을 만든다.
