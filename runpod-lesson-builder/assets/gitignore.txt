@@ -1,0 +1,19 @@
+# 접속값·호스트 키 (공개 금지)
+.env.local
+.ssh/
+
+# 마스킹 전 원본 스크린샷·로그 (민감정보 가능)
+**/_raw/
+
+# 대용량 산출물
+checkpoints/
+videos/*.mp4
+
+# 파이썬·주피터 부산물
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# 에이전트 도구 상태 폴더 (레슨 폴더 안에 생길 수 있음)
+.omc/
+.omx/

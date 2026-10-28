@@ -1,0 +1,362 @@
+{
+ "s01-runpod-pods-list.png": {
+  "source": "s01-runpod-pods-list.jpg",
+  "masked_boxes": 4,
+  "size": [
+   1568,
+   744
+  ]
+ },
+ "s02-pod-connect-panel.png": {
+  "source": "s02-pod-connect-panel.jpg",
+  "masked_boxes": 8,
+  "size": [
+   1568,
+   744
+  ]
+ },
+ "s02-http-services-zoom.png": {
+  "source": "s02-http-services-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   798,
+   105
+  ]
+ },
+ "s03-jupyterlab-first-screen.png": {
+  "source": "s03-jupyterlab-first-screen.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s05c-llm-course-context-menu.png": {
+  "source": "s05c-llm-course-context-menu.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s06-inside-llm-course.png": {
+  "source": "s06-inside-llm-course.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s07-terminal-opened.png": {
+  "source": "s07-terminal-opened.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s08a-pwd.png": {
+  "source": "s08a-pwd.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s09-nvidia-smi.png": {
+  "source": "s09-nvidia-smi.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s09-nvidia-smi-zoom.png": {
+  "source": "s09-nvidia-smi-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   960,
+   446
+  ]
+ },
+ "s10-s11-query-and-python.png": {
+  "source": "s10-s11-query-and-python.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s10-s11-zoom.png": {
+  "source": "s10-s11-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   960,
+   176
+  ]
+ },
+ "s10-typeahead-messy-zoom.png": {
+  "source": "s10-typeahead-messy-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   960,
+   176
+  ]
+ },
+ "s12-python-file-created.png": {
+  "source": "s12-python-file-created.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s13a-code-pasted.png": {
+  "source": "s13a-code-pasted.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s13b-rename-dialog.png": {
+  "source": "s13b-rename-dialog.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s13c-rename-dialog-filled-zoom.png": {
+  "source": "s13c-rename-dialog-filled-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   300,
+   187
+  ]
+ },
+ "s13d-saving-completed-latency.png": {
+  "source": "s13d-saving-completed-latency.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s14-check-gpu-saved.png": {
+  "source": "s14-check-gpu-saved.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s15-run-check-gpu.png": {
+  "source": "s15-run-check-gpu.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s15-run-check-gpu-zoom.png": {
+  "source": "s15-run-check-gpu-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   960,
+   176
+  ]
+ },
+ "s16b-notebook-created.png": {
+  "source": "s16b-notebook-created.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s17a-notebook-rename-dialog.png": {
+  "source": "s17a-notebook-rename-dialog.jpg",
+  "masked_boxes": 0,
+  "size": [
+   941,
+   419
+  ]
+ },
+ "s17b-notebook-rename-filled-zoom.png": {
+  "source": "s17b-notebook-rename-filled-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   300,
+   187
+  ]
+ },
+ "s18-kernel-idle.png": {
+  "source": "s18-kernel-idle.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s19-cell1.png": {
+  "source": "s19-cell1.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s20-cell2.png": {
+  "source": "s20-cell2.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s21-cell3.png": {
+  "source": "s21-cell3.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s22-cell4-saved.png": {
+  "source": "s22-cell4-saved.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s23a-kernel-menu.png": {
+  "source": "s23a-kernel-menu.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s23b-restart-dialog.png": {
+  "source": "s23b-restart-dialog.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s23c-run-all-done.png": {
+  "source": "s23c-run-all-done.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s24a-nvidia-smi-kernel-alive.png": {
+  "source": "s24a-nvidia-smi-kernel-alive.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s24a-nvidia-smi-kernel-alive-zoom.png": {
+  "source": "s24a-nvidia-smi-kernel-alive-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   960,
+   445
+  ]
+ },
+ "s24b-kernel-shutdown.png": {
+  "source": "s24b-kernel-shutdown.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s24c-s25-vram-released-ls.png": {
+  "source": "s24c-s25-vram-released-ls.jpg",
+  "masked_boxes": 0,
+  "size": [
+   1568,
+   698
+  ]
+ },
+ "s24c-s25-zoom.png": {
+  "source": "s24c-s25-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   960,
+   445
+  ]
+ },
+ "s05e-new-folder-name-edit-scratch.png": {
+  "source": "s05e-new-folder-name-edit-scratch.png",
+  "masked_boxes": 0,
+  "size": [
+   284,
+   165
+  ]
+ },
+ "s05f-llm-course-created-scratch.png": {
+  "source": "s05f-llm-course-created-scratch.png",
+  "masked_boxes": 0,
+  "size": [
+   284,
+   165
+  ]
+ },
+ "s08b-cd-prompt-zoom.png": {
+  "source": "s08b-cd-prompt-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   420,
+   57
+  ]
+ },
+ "s17c-notebook-rename-dialog-scratch.png": {
+  "source": "s17c-notebook-rename-dialog-scratch.png",
+  "masked_boxes": 0,
+  "size": [
+   1600,
+   900
+  ]
+ },
+ "s23d-run-all-in-progress-scratch.png": {
+  "source": "s23d-run-all-in-progress-scratch.png",
+  "masked_boxes": 0,
+  "size": [
+   1600,
+   900
+  ]
+ },
+ "s23e-run-all-in-progress-scratch-zoom.png": {
+  "source": "s23e-run-all-in-progress-scratch-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   808,
+   308
+  ]
+ },
+ "s24d-vram-released-zoom.png": {
+  "source": "s24d-vram-released-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   650,
+   273
+  ]
+ },
+ "s25-ls-la-zoom.png": {
+  "source": "s25-ls-la-zoom.png",
+  "masked_boxes": 0,
+  "size": [
+   650,
+   110
+  ]
+ }
+}

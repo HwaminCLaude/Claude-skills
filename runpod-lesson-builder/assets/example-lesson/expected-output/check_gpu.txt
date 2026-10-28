@@ -1,0 +1,10 @@
+# log: logs/terminal-commands.ssh-rerun.log
+# after: $ python check_gpu.py
+# python check_gpu.py 성공 판별 기준 (정규식, 한 줄에 하나). 촬영 당시 실제 출력은 맨 아래 주석.
+^PyTorch: \d+\.\d+\.\d+
+^CUDA Available: True$
+^GPU: NVIDIA .+
+# 실제 출력(2026-10-28, A40):
+#   PyTorch: 2.8.0+cu128
+#   CUDA Available: True
+#   GPU: NVIDIA A40

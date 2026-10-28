@@ -1,0 +1,655 @@
+{
+ "lesson": "C02-L02",
+ "captured_at": "2026-10-28 03:00-03:10 KST",
+ "environment": {
+  "gpu": "NVIDIA A40 (46068 MiB), Secure Cloud CA-MTL-1",
+  "image": "runpod/pytorch:1.4.1-cu1281-torch280-ubuntu2404",
+  "driver": "595.91.07 (CUDA Version 13.2)",
+  "jupyterlab": "4.6.4",
+  "python": "3.12.3 (/usr/local/bin/python)",
+  "pytorch": "2.8.0+cu128"
+ },
+ "images": [
+  {
+   "file": "screenshots/s01-runpod-pods-list.png",
+   "steps": [],
+   "kind": "current",
+   "source": "real-capture",
+   "masked_boxes": 4,
+   "captured_note": "RunPod 콘솔 Pods 목록(두 Pod, 초록 점)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s02-http-services-zoom.png",
+   "steps": [
+    "S02"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "HTTP services 영역 확대(Port 8888 -> Jupyter Lab, Ready)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s02-pod-connect-panel.png",
+   "steps": [],
+   "kind": "click",
+   "source": "real-capture",
+   "masked_boxes": 8,
+   "captured_note": "Pod 이름 클릭 후 Connect 탭(HTTP services Jupyter Lab Ready)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s03-jupyterlab-first-screen.png",
+   "steps": [
+    "S03"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "JupyterLab 첫 화면(Launcher, /workspace, Jupyter news 알림)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s05c-llm-course-context-menu.png",
+   "steps": [],
+   "kind": "verification",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "llm-course 생성 확인 + 우클릭 메뉴(Rename F2 등)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s05e-new-folder-name-edit-scratch.png",
+   "steps": [
+    "S05"
+   ],
+   "kind": "execution",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "New Folder 클릭 직후: Untitled Folder 이름 칸이 선택된 편집 상태. 파일 목록 부분만 잘라 냄(경로 표시줄이 촬영용 임시 폴더)",
+   "pod": "B <POD_B_NAME> (임시 폴더 /workspace/c02l02-fix, 촬영 후 삭제)",
+   "tool": "tools/jlab.py (headless Chromium 1600x900) + PIL crop (0,0,284,165)"
+  },
+  {
+   "file": "screenshots/s05f-llm-course-created-scratch.png",
+   "steps": [
+    "S05"
+   ],
+   "kind": "verification",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "llm-course 입력 후 Enter: 목록에 llm-course(오른쪽 클릭 메뉴 없음). 파일 목록 부분만 잘라 냄",
+   "pod": "B <POD_B_NAME> (임시 폴더 /workspace/c02l02-fix, 촬영 후 삭제)",
+   "tool": "tools/jlab.py (headless Chromium 1600x900) + PIL crop (0,0,284,165)"
+  },
+  {
+   "file": "screenshots/s06-inside-llm-course.png",
+   "steps": [
+    "S06"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "llm-course 진입: 경로 / workspace / llm-course /, Launcher 제목 workspace/llm-course",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s07-terminal-opened.png",
+   "steps": [
+    "S07"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "Terminal 열림(배너, groups 경고, 프롬프트 /)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s08a-pwd.png",
+   "steps": [
+    "S08"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "pwd 결과 /workspace/llm-course (프롬프트는 /)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s08b-cd-prompt-zoom.png",
+   "steps": [
+    "S08"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "s09-nvidia-smi-zoom.png 위 4줄만 잘라 냄: pwd 결과, cd 입력, 바뀐 프롬프트 /workspace/llm-course#",
+   "pod": "A <POD_A_NAME>",
+   "tool": "PIL crop of _raw/s09-nvidia-smi-zoom.png (0,0,420,57)"
+  },
+  {
+   "file": "screenshots/s09-nvidia-smi-zoom.png",
+   "steps": [
+    "S09"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "nvidia-smi 출력 확대(A40, 0MiB/46068MiB, Driver 595.91.07, CUDA 13.2)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s09-nvidia-smi.png",
+   "steps": [
+    "S09"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "cd 후 nvidia-smi 전체 화면",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s10-s11-query-and-python.png",
+   "steps": [
+    "S10"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "GPU 요약 CSV + python 버전/경로",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s10-s11-zoom.png",
+   "steps": [
+    "S11"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "CSV 한 줄과 Python 3.12.3, /usr/local/bin/python 확대",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s10-typeahead-messy-zoom.png",
+   "steps": [],
+   "kind": "execution",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "섞인 출력 확대",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s12-python-file-created.png",
+   "steps": [
+    "S12"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "Launcher > Python File: untitled.py가 llm-course 안에 생기고 편집기 열림",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s13a-code-pasted.png",
+   "steps": [
+    "S13"
+   ],
+   "kind": "code-written",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "Ctrl+V로 코드 7줄 붙여 넣음(저장 안 됨 점)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s13b-rename-dialog.png",
+   "steps": [
+    "S13"
+   ],
+   "kind": "click",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "첫 Ctrl+S: Rename file 대화상자(untitled 선택됨)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s13c-rename-dialog-filled-zoom.png",
+   "steps": [
+    "S13"
+   ],
+   "kind": "code-written",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "대화상자에 check_gpu 입력 -> check_gpu.py",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s13d-saving-completed-latency.png",
+   "steps": [
+    "S14"
+   ],
+   "kind": "execution",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "Rename and Save 직후(Saving completed, 이름 표시 지연)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s14-check-gpu-saved.png",
+   "steps": [
+    "S14"
+   ],
+   "kind": "verification",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "탭·File Browser 모두 check_gpu.py",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s15-run-check-gpu-zoom.png",
+   "steps": [
+    "S15"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "PyTorch 2.8.0+cu128 / CUDA Available True / GPU NVIDIA A40 확대",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s15-run-check-gpu.png",
+   "steps": [
+    "S15"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "Terminal: python check_gpu.py 결과",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s16b-notebook-created.png",
+   "steps": [
+    "S16"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "Notebook Python 3 (ipykernel): Untitled.ipynb, 커널 Connecting",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s17a-notebook-rename-dialog.png",
+   "steps": [],
+   "kind": "click",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "첫 Ctrl+S: Rename file(Untitled.ipynb)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s17b-notebook-rename-filled-zoom.png",
+   "steps": [
+    "S17"
+   ],
+   "kind": "code-written",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "gpu_check.ipynb 입력",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s17c-notebook-rename-dialog-scratch.png",
+   "steps": [
+    "S17"
+   ],
+   "kind": "click",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "새 노트북에서 첫 Ctrl+S: Rename file 창(Untitled 선택됨, 체크박스 꺼짐). 고해상도 재촬영",
+   "pod": "B <POD_B_NAME> (임시 폴더 /workspace/c02l02-fix, 촬영 후 삭제)",
+   "tool": "tools/jlab.py (headless Chromium 1600x900)"
+  },
+  {
+   "file": "screenshots/s18-kernel-idle.png",
+   "steps": [
+    "S18"
+   ],
+   "kind": "verification",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "탭 gpu_check.ipynb, 커널 Python 3 (ipykernel) Idle",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s19-cell1.png",
+   "steps": [
+    "S19"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "셀1: PyTorch 버전 2.8.0+cu128",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s20-cell2.png",
+   "steps": [
+    "S20"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "셀2: CUDA True, NVIDIA A40, 44.4GB",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s21-cell3.png",
+   "steps": [
+    "S21"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "셀3: 텐서 136MB, nvidia-smi memory.used 431MiB",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s22-cell4-saved.png",
+   "steps": [
+    "S22"
+   ],
+   "kind": "result",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "셀4: sys.executable /usr/local/bin/python, 저장",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s23a-kernel-menu.png",
+   "steps": [],
+   "kind": "click",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "노트북이 열린 상태의 Kernel 메뉴(Restart Kernel and Run All Cells…)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s23b-restart-dialog.png",
+   "steps": [],
+   "kind": "click",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "Restart Kernel? 대화상자(Cancel / Restart)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s23c-run-all-done.png",
+   "steps": [
+    "S23"
+   ],
+   "kind": "verification",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "재시작 후 [1]~[4] 순서대로 재실행, 저장",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s23d-run-all-in-progress-scratch.png",
+   "steps": [
+    "S23"
+   ],
+   "kind": "execution",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "Restart Kernel and Run All Cells… → Restart 직후(약 2초): 셀 4개 모두 [*], 출력 지워짐, 상태 표시줄 Busy. 약 8초 뒤 [1]~[4]와 Idle로 끝남",
+   "pod": "B <POD_B_NAME> (임시 폴더 /workspace/c02l02-fix, 촬영 후 삭제)",
+   "tool": "tools/jlab.py (headless Chromium 1600x900)"
+  },
+  {
+   "file": "screenshots/s23e-run-all-in-progress-scratch-zoom.png",
+   "steps": [
+    "S23"
+   ],
+   "kind": "execution",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "위 화면의 셀 부분 확대([*] 표시)",
+   "pod": "B <POD_B_NAME> (임시 폴더 /workspace/c02l02-fix, 촬영 후 삭제)",
+   "tool": "tools/jlab.py (headless Chromium 1600x900) + PIL crop (292,96,1100,404)"
+  },
+  {
+   "file": "screenshots/s24a-nvidia-smi-kernel-alive-zoom.png",
+   "steps": [
+    "S24"
+   ],
+   "kind": "current",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "위 화면 확대",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s24a-nvidia-smi-kernel-alive.png",
+   "steps": [],
+   "kind": "current",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "커널 살아 있을 때 nvidia-smi: 431MiB, python 프로세스 422MiB",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s24b-kernel-shutdown.png",
+   "steps": [
+    "S24"
+   ],
+   "kind": "execution",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "Kernel > Shut Down Kernel: No Kernel",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s24c-s25-vram-released-ls.png",
+   "steps": [],
+   "kind": "verification",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "nvidia-smi 0MiB + ls -la(check_gpu.py, gpu_check.ipynb)",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s24c-s25-zoom.png",
+   "steps": [],
+   "kind": "verification",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "위 화면 확대",
+   "pod": "A <POD_A_NAME>",
+   "tool": "claude-in-chrome screenshot/zoom"
+  },
+  {
+   "file": "screenshots/s24d-vram-released-zoom.png",
+   "steps": [
+    "S24"
+   ],
+   "kind": "verification",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "s24c-s25-zoom.png의 nvidia-smi 부분만 잘라 냄: 커널 종료 후 0MiB / 46068MiB, No running processes found",
+   "pod": "A <POD_A_NAME>",
+   "tool": "PIL crop of _raw/s24c-s25-zoom.png (0,0,650,273)"
+  },
+  {
+   "file": "screenshots/s25-ls-la-zoom.png",
+   "steps": [
+    "S25"
+   ],
+   "kind": "verification",
+   "source": "real-capture",
+   "masked_boxes": 0,
+   "captured_note": "s24c-s25-zoom.png의 ls -la 부분만 잘라 냄: check_gpu.py 182, gpu_check.ipynb 2503",
+   "pod": "A <POD_A_NAME>",
+   "tool": "PIL crop of _raw/s24c-s25-zoom.png (0,278,650,388)"
+  },
+  {
+   "file": "screenshots/s01-click-pods-and-pod.png",
+   "steps": [
+    "S01"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s01-runpod-pods-list.png",
+   "marks": 2
+  },
+  {
+   "file": "screenshots/s02-click-connect-jupyter.png",
+   "steps": [
+    "S02"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s02-pod-connect-panel.png",
+   "marks": 2
+  },
+  {
+   "file": "screenshots/s04-s05-click-no-newfolder.png",
+   "steps": [
+    "S04",
+    "S05"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s03-jupyterlab-first-screen.png",
+   "marks": 2
+  },
+  {
+   "file": "screenshots/s06-click-llm-course.png",
+   "steps": [
+    "S06"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s05f-llm-course-created-scratch.png",
+   "marks": 1
+  },
+  {
+   "file": "screenshots/s07-click-terminal.png",
+   "steps": [
+    "S07"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s06-inside-llm-course.png",
+   "marks": 1
+  },
+  {
+   "file": "screenshots/s12-click-python-file.png",
+   "steps": [
+    "S12"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s06-inside-llm-course.png",
+   "marks": 1
+  },
+  {
+   "file": "screenshots/s15-click-terminal-tab.png",
+   "steps": [
+    "S15"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s14-check-gpu-saved.png",
+   "marks": 1
+  },
+  {
+   "file": "screenshots/s16-click-notebook.png",
+   "steps": [
+    "S16"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s06-inside-llm-course.png",
+   "marks": 1
+  },
+  {
+   "file": "screenshots/s23-click-restart.png",
+   "steps": [
+    "S23"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s23b-restart-dialog.png",
+   "marks": 1
+  },
+  {
+   "file": "screenshots/s23-click-run-all.png",
+   "steps": [
+    "S23"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s23a-kernel-menu.png",
+   "marks": 1
+  },
+  {
+   "file": "screenshots/s24-click-shutdown-kernel.png",
+   "steps": [
+    "S24"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s23a-kernel-menu.png",
+   "marks": 1
+  },
+  {
+   "file": "screenshots/s26-click-stop.png",
+   "steps": [
+    "S26"
+   ],
+   "kind": "click",
+   "source": "annotated",
+   "base": "screenshots/s02-pod-connect-panel.png",
+   "marks": 1
+  }
+ ]
+}

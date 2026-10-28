@@ -1,0 +1,396 @@
+# C02-L02 실습 원본 절차서 (Execution Playbook) — 단일 원본
+# README, storyboard, 검증 스크립트(tools/check_lesson.py)는 모두 이 파일을 기준으로 맞춘다.
+# 모든 값은 2026-10-28 Pod A(<POD_A_NAME>)에서 실제로 수행·촬영한 결과다.
+# 보충 촬영(S05·S06·S17·S23의 *-scratch* 그림)은 같은 날 Pod B(<POD_B_NAME>)의 임시 폴더
+# /workspace/c02l02-fix 에서 tools/jlab.py로 촬영하고 폴더를 지웠다(README 캡션에 표시). S26 그림은 s02 패널에 Stop 위치만 덧그림.
+lesson:
+  id: C02-L02
+  title: JupyterLab 접속하고 GPU 확인하기 — Terminal · Python 파일 · Notebook
+  captured_at: "2026-10-28 03:00-03:10 KST"
+  environment:
+    gpu: NVIDIA A40 (46068 MiB), Secure Cloud CA-MTL-1
+    image: runpod/pytorch:1.4.1-cu1281-torch280-ubuntu2404
+    driver: "595.91.07 (CUDA Version 13.2)"
+    jupyterlab: "4.6.4"
+    python: "3.12.3 (/usr/local/bin/python)"
+    pytorch: "2.8.0+cu128"
+  start_condition: RunPod 콘솔에 로그인되어 있고 Pod가 Running, Connect 패널의 Jupyter Lab이 Ready
+  done_condition: /workspace/llm-course 에 check_gpu.py 와 gpu_check.ipynb 가 있고, 세 방법 모두 NVIDIA A40 / CUDA True 확인, 마지막에 Pod를 Stop
+
+steps:
+  - id: S01
+    part: A
+    screen: RunPod 콘솔 (console.runpod.io)
+    env: 브라우저
+    cwd: null
+    action: 왼쪽 메뉴 Pods를 누르고 목록에서 내 Pod 이름을 누른다. 여러 개면 C02-L01에서 만든 Pod(Compute type 열로 GPU 종류 확인), 남는 Pod는 S26에서 Stop
+    ui_target: ["Pods (왼쪽 메뉴)", "Pod 이름 (예: <POD_A_NAME>)"]
+    file: null
+    command: null
+    change: null
+    save: null
+    run: null
+    result: Pod 목록에 이름 앞 초록 점(Running)이 보인다
+    success_check: 초록 점이 보인다
+    screenshots: [s01-click-pods-and-pod.png]
+    logs: []
+    concept: Pod = GPU가 달린 원격 컴퓨터(컨테이너)
+    readme_anchor: step-1
+    scene_id: A-connect
+    troubleshooting: [T01]
+  - id: S02
+    part: A
+    screen: Pod 상세 패널
+    env: 브라우저
+    action: 오른쪽 패널의 Connect 탭을 누르고 HTTP services의 Port 8888 → Jupyter Lab 이 Ready인지 본다(Jupyter Lab 글자는 S03에서 누른다)
+    ui_target: ["Connect", "Jupyter Lab"]
+    result: Port 8888 → Jupyter Lab, 오른쪽에 초록 Ready
+    success_check: Ready 표시
+    screenshots: [s02-click-connect-jupyter.png, s02-http-services-zoom.png]
+    concept: HTTP 프록시로 Pod 안 8888번 포트(JupyterLab)에 접속
+    readme_anchor: step-2
+    scene_id: A-connect
+    troubleshooting: [T01]
+  - id: S03
+    part: A
+    screen: Pod 상세 패널 → 새 브라우저 탭
+    env: 브라우저
+    action: Jupyter Lab 링크를 누른다
+    ui_target: ["Jupyter Lab"]
+    result: 새 탭에서 JupyterLab이 열리고 Launcher가 보인다(경로 / workspace /)
+    success_check: Launcher의 Notebook·Console·Other 구역이 보인다
+    screenshots: [s03-jupyterlab-first-screen.png]
+    concept: 링크 주소에 접속 토큰이 들어 있다 → 주소 공유 금지
+    readme_anchor: step-3
+    scene_id: A-connect
+    troubleshooting: [T02, T03]
+  - id: S04
+    part: A
+    screen: JupyterLab
+    env: 브라우저(JupyterLab)
+    action: 화면 구성(메뉴 바, 왼쪽 File Browser, 가운데 Launcher)을 확인하고 오른쪽 아래 Jupyter news 알림에서 No를 누른다
+    ui_target: ["No"]
+    result: 알림이 닫힌다
+    success_check: 경로 표시줄에 / workspace /
+    screenshots: [s04-s05-click-no-newfolder.png]
+    concept: File Browser = Pod 안 파일 탐색기, Launcher = 새 작업 만들기
+    readme_anchor: step-4
+    scene_id: B-folder
+  - id: S05
+    part: B
+    screen: JupyterLab File Browser
+    env: 브라우저(JupyterLab)
+    cwd: /workspace
+    action: 영문 입력 상태 확인 → File Browser 툴바의 New Folder 버튼 → 목록에 Untitled Folder 이름이 선택된 입력 칸이 생기면 다른 곳을 누르지 말고 llm-course 입력 → Enter
+    ui_target: ["New Folder"]
+    file: /workspace/llm-course
+    change: new
+    result: llm-course 폴더가 생긴다(화면 반영이 1~2초 늦을 수 있음)
+    success_check: 목록에 llm-course
+    screenshots: [s04-s05-click-no-newfolder.png, s05e-new-folder-name-edit-scratch.png, s05f-llm-course-created-scratch.png]
+    concept: /workspace 는 Pod를 Stop해도 남는 저장 공간
+    readme_anchor: step-5
+    scene_id: B-folder
+    troubleshooting: [T04, T14, T17]
+  - id: S06
+    part: B
+    screen: JupyterLab File Browser
+    env: 브라우저(JupyterLab)
+    action: llm-course 를 더블클릭한다
+    ui_target: ["llm-course"]
+    result: 경로 표시줄이 / workspace / llm-course /, Launcher 제목이 workspace/llm-course
+    success_check: 경로 표시줄 확인
+    screenshots: [s06-click-llm-course.png, s06-inside-llm-course.png]
+    readme_anchor: step-6
+    scene_id: B-folder
+  - id: S07
+    part: C
+    screen: JupyterLab Launcher
+    env: 브라우저(JupyterLab)
+    action: Launcher의 Other 구역에서 Terminal 을 누른다
+    ui_target: ["Terminal"]
+    result: Terminal 탭이 열리고 RunPod 배너와 프롬프트 root@<컨테이너이름>:/# 가 보인다
+    success_check: 커서가 깜빡이는 프롬프트
+    screenshots: [s07-click-terminal.png, s07-terminal-opened.png]
+    concept: Terminal = Pod의 bash 셸
+    readme_anchor: step-7
+    scene_id: C-terminal
+    troubleshooting: [T05]
+  - id: S08
+    part: C
+    screen: JupyterLab Terminal
+    env: Bash (JupyterLab Terminal)
+    cwd: /workspace/llm-course
+    action: 영문 입력 상태 확인 → pwd 로 현재 위치를 보고, cd 로 작업 폴더에 들어간다(cd는 성공하면 출력 없음)
+    command: |
+      pwd
+      cd /workspace/llm-course
+    result: pwd → /workspace/llm-course, cd 뒤 프롬프트가 root@...:/workspace/llm-course#
+    success_check: 프롬프트에 /workspace/llm-course
+    screenshots: [s08a-pwd.png, s08b-cd-prompt-zoom.png]
+    logs: [logs/terminal-commands.ssh-rerun.log]
+    concept: 프롬프트 표시와 실제 위치가 다를 수 있다 → cd 로 확실하게
+    readme_anchor: step-8
+    scene_id: C-terminal
+    troubleshooting: [T06, T14, T15]
+  - id: S09
+    part: C
+    screen: JupyterLab Terminal
+    env: Bash
+    cwd: /workspace/llm-course
+    command: nvidia-smi
+    result: "NVIDIA A40, Driver 595.91.07, CUDA Version 13.2, 0MiB / 46068MiB, GPU-Util 0%, No running processes found"
+    success_check: GPU 이름과 메모리 총량이 보인다
+    screenshots: [s09-nvidia-smi.png, s09-nvidia-smi-zoom.png]
+    logs: [logs/terminal-commands.ssh-rerun.log]
+    concept: nvidia-smi 표 읽기(드라이버, 지원 CUDA, 메모리, 사용률, 프로세스)
+    readme_anchor: step-9
+    scene_id: C-terminal
+    troubleshooting: [T07]
+  - id: S10
+    part: C
+    screen: JupyterLab Terminal
+    env: Bash
+    command: |
+      clear
+      nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+    result: "name, memory.total [MiB], memory.used [MiB] / NVIDIA A40, 46068 MiB, 0 MiB"
+    success_check: CSV 두 줄
+    screenshots: [s10-s11-query-and-python.png]
+    logs: [logs/terminal-commands.ssh-rerun.log]
+    readme_anchor: step-10
+    scene_id: C-terminal
+    troubleshooting: [T08]
+  - id: S11
+    part: C
+    screen: JupyterLab Terminal
+    env: Bash
+    command: |
+      python --version
+      which python
+    result: "Python 3.12.3 / /usr/local/bin/python"
+    success_check: 버전과 경로가 출력된다
+    screenshots: [s10-s11-zoom.png]
+    logs: [logs/terminal-commands.ssh-rerun.log]
+    concept: 이 Terminal이 쓰는 파이썬의 위치
+    readme_anchor: step-11
+    scene_id: C-terminal
+  - id: S12
+    part: D
+    screen: JupyterLab Launcher (workspace/llm-course)
+    env: 브라우저(JupyterLab)
+    action: Launcher 탭으로 돌아가 Other 구역의 Python File 을 누른다
+    ui_target: ["Launcher 탭", "Python File"]
+    file: /workspace/llm-course/untitled.py
+    change: new
+    result: untitled.py 가 llm-course 안에 생기고 편집기가 열린다
+    success_check: File Browser에 untitled.py
+    screenshots: [s12-click-python-file.png, s12-python-file-created.png]
+    readme_anchor: step-12
+    scene_id: D-pyfile
+  - id: S13
+    part: D
+    screen: JupyterLab 편집기
+    env: 브라우저(JupyterLab)
+    action: 아래 코드를 복사해 편집기에 붙여 넣고(Ctrl+V, Mac ⌘V) 처음으로 Ctrl+S 를 누른 뒤 Rename file 대화상자에 check_gpu 만 입력(.py 는 이미 있음, 체크박스는 건드리지 않음)하고 Rename and Save
+    ui_target: ["편집기", "Rename file", "Rename and Save"]
+    file: /workspace/llm-course/check_gpu.py
+    code_file: code/check_gpu.py
+    change: new
+    save: 첫 Ctrl+S → Rename file → Rename and Save
+    result: 탭과 File Browser 이름이 check_gpu.py 로 바뀌고 상태 표시줄에 Saving completed
+    success_check: 탭 이름 check_gpu.py, 저장 안 됨 점(●) 없음
+    screenshots: [s13a-code-pasted.png, s13b-rename-dialog.png, s13c-rename-dialog-filled-zoom.png]
+    readme_anchor: step-13
+    scene_id: D-pyfile
+    troubleshooting: [T09, T16]
+  - id: S14
+    part: D
+    screen: JupyterLab 편집기
+    env: 브라우저(JupyterLab)
+    action: 탭 이름과 File Browser에서 check_gpu.py 를 확인한다
+    result: check_gpu.py 저장 완료
+    success_check: 탭 이름 check_gpu.py
+    screenshots: [s14-check-gpu-saved.png, s13d-saving-completed-latency.png]
+    readme_anchor: step-14
+    scene_id: D-pyfile
+  - id: S15
+    part: D
+    screen: JupyterLab Terminal
+    env: Bash
+    cwd: /workspace/llm-course
+    action: Terminal 탭의 글자 부분을 누르고 실행한다(탭을 닫았다면 Launcher → Terminal 후 cd /workspace/llm-course 부터)
+    command: |
+      clear
+      python check_gpu.py
+    run: python check_gpu.py
+    result: "PyTorch: 2.8.0+cu128 / CUDA Available: True / GPU: NVIDIA A40"
+    success_check: CUDA Available True 와 GPU 이름
+    screenshots: [s15-click-terminal-tab.png, s15-run-check-gpu.png, s15-run-check-gpu-zoom.png]
+    logs: [logs/terminal-commands.ssh-rerun.log]
+    expected_output: expected-output/check_gpu.txt
+    readme_anchor: step-15
+    scene_id: D-pyfile
+    troubleshooting: [T10]
+  - id: S16
+    part: E
+    screen: JupyterLab
+    env: 브라우저(JupyterLab)
+    action: File Browser 툴바의 + (New Launcher)로 Launcher를 열고 제목 workspace/llm-course 를 확인한 뒤 맨 위 Notebook 구역(Console 구역 아님)의 Python 3 (ipykernel) 을 누른다
+    ui_target: ["+ (New Launcher)", "Python 3 (ipykernel)"]
+    file: /workspace/llm-course/Untitled.ipynb
+    change: new
+    result: Untitled.ipynb 가 열리고 오른쪽 위에 Python 3 (ipykernel), 상태 표시줄은 잠깐 Connecting
+    success_check: "빈 셀 [ ]: 하나"
+    screenshots: [s16-click-notebook.png, s16b-notebook-created.png]
+    readme_anchor: step-16
+    scene_id: E-notebook
+  - id: S17
+    part: E
+    screen: JupyterLab Notebook
+    env: 브라우저(JupyterLab)
+    action: 처음으로 Ctrl+S → Rename file 에 gpu_check 입력(파이썬 파일 check_gpu 와 단어 순서 반대) → Rename and Save. 창이 안 뜨면 Untitled.ipynb 우클릭 → Rename(F2) → gpu_check.ipynb
+    ui_target: ["Rename file", "Rename and Save"]
+    file: /workspace/llm-course/gpu_check.ipynb
+    save: 첫 Ctrl+S → Rename and Save
+    result: 탭 이름 gpu_check.ipynb
+    success_check: 탭 이름 확인
+    screenshots: [s17c-notebook-rename-dialog-scratch.png, s17b-notebook-rename-filled-zoom.png]
+    readme_anchor: step-17
+    scene_id: E-notebook
+    troubleshooting: [T16, T17]
+  - id: S18
+    part: E
+    screen: JupyterLab Notebook
+    env: Notebook 커널
+    action: 오른쪽 위 커널 이름과 아래 상태 표시줄을 확인한다
+    result: "Python 3 (ipykernel) | Idle"
+    success_check: Idle (Connecting 이면 몇 초 기다림). 목록 이름 앞 ● 는 커널 실행 중 표시
+    screenshots: [s18-kernel-idle.png]
+    concept: 커널 = 노트북 코드를 실제로 실행하는 파이썬 프로세스
+    readme_anchor: step-18
+    scene_id: E-notebook
+  - id: S19
+    part: E
+    screen: JupyterLab Notebook
+    env: Notebook 커널
+    action: 셀 1 코드를 붙여 넣고 Shift+Enter
+    code_file: notebooks/cells/cell1.py
+    result: "PyTorch 버전: 2.8.0+cu128"
+    screenshots: [s19-cell1.png]
+    readme_anchor: step-19
+    scene_id: E-notebook
+  - id: S20
+    part: E
+    screen: JupyterLab Notebook
+    env: Notebook 커널
+    action: 셀 2 코드를 붙여 넣고 Shift+Enter
+    code_file: notebooks/cells/cell2.py
+    result: "CUDA 사용 가능: True / GPU 이름: NVIDIA A40 / GPU 전체 메모리(GB): 44.4"
+    screenshots: [s20-cell2.png]
+    readme_anchor: step-20
+    scene_id: E-notebook
+    troubleshooting: [T13]
+  - id: S21
+    part: E
+    screen: JupyterLab Notebook
+    env: Notebook 커널
+    action: 셀 3 코드를 붙여 넣고 Shift+Enter
+    code_file: notebooks/cells/cell3.py
+    result: "텐서 136 MB, nvidia-smi memory.used 431 MiB / 46068 MiB"
+    screenshots: [s21-cell3.png]
+    concept: VRAM 사용 = 텐서 + CUDA 컨텍스트
+    readme_anchor: step-21
+    scene_id: E-notebook
+  - id: S22
+    part: E
+    screen: JupyterLab Notebook
+    env: Notebook 커널
+    action: 셀 4 코드를 붙여 넣고 Shift+Enter, 그다음 Ctrl+S
+    code_file: notebooks/cells/cell4.py
+    result: "이 노트북의 파이썬: /usr/local/bin/python (Terminal의 which python 과 같음)"
+    screenshots: [s22-cell4-saved.png]
+    readme_anchor: step-22
+    scene_id: E-notebook
+  - id: S23
+    part: E
+    screen: JupyterLab Notebook
+    env: 브라우저(JupyterLab)
+    action: "Kernel 메뉴 → Restart Kernel and Run All Cells… → Restart"
+    ui_target: ["Kernel", "Restart Kernel and Run All Cells…", "Restart"]
+    result: Restart 직후 셀 4개가 모두 [*](출력 지워짐, 상태 표시줄 Busy) → 위에서부터 [1]~[4]로 다시 채워지고 같은 결과(보충 촬영에서 약 8초)
+    success_check: "[*]가 하나도 남지 않고 실행 번호 1,2,3,4, 상태 표시줄 Idle (실행 도중 잠깐 Idle이 보일 수 있음)"
+    screenshots: [s23-click-run-all.png, s23-click-restart.png, s23d-run-all-in-progress-scratch.png, s23e-run-all-in-progress-scratch-zoom.png, s23c-run-all-done.png]
+    concept: 노트북은 위에서 아래로 처음부터 다시 돌려도 같아야 한다
+    readme_anchor: step-23
+    scene_id: E-notebook
+  - id: S24
+    part: E
+    screen: JupyterLab Terminal ↔ Notebook
+    env: Bash + 브라우저
+    action: "Terminal에서 nvidia-smi(커널이 VRAM 사용 중) → Notebook 탭에서 Kernel → Shut Down Kernel(File → Shut Down 아님) → Terminal에서 clear, nvidia-smi"
+    command: |
+      nvidia-smi
+      clear
+      nvidia-smi
+    result: "종료 전 431MiB(python 422MiB) → 종료 후 0MiB, No running processes found"
+    success_check: 0MiB
+    screenshots: [s24a-nvidia-smi-kernel-alive-zoom.png, s24-click-shutdown-kernel.png, s24b-kernel-shutdown.png, s24d-vram-released-zoom.png]
+    concept: 커널이 살아 있으면 VRAM을 계속 잡고 있다
+    readme_anchor: step-24
+    scene_id: E-notebook
+    troubleshooting: [T11, T12]
+  - id: S25
+    part: F
+    screen: JupyterLab Terminal
+    env: Bash
+    cwd: /workspace/llm-course
+    command: ls -la
+    result: ".ipynb_checkpoints, check_gpu.py(182 B), gpu_check.ipynb"
+    success_check: check_gpu.py(약 180바이트)와 gpu_check.ipynb 가 있다
+    screenshots: [s25-ls-la-zoom.png]
+    logs: [logs/terminal-commands.ssh-rerun.log]
+    readme_anchor: step-25
+    scene_id: F-wrap
+  # S26: Stop 확인 창과 Stop 뒤 화면은 촬영하지 않음(콘솔은 로그인이 필요하고, 촬영 Pod는 다른 레슨 제작에 계속 사용).
+  #      절차는 RunPod 공식 문서 manage-pods("Click the Stop button (square icon) and confirm")와 s02 패널의 실제 Stop 버튼 위치를 따른다.
+  - id: S26
+    part: F
+    screen: RunPod 콘솔 (console.runpod.io) → Pod 상세 패널
+    env: 브라우저
+    cwd: null
+    action: 왼쪽 메뉴 Pods → 내 Pod 이름 → 상세 패널 위쪽 빨간 Stop → 확인. 켜 둔 Pod가 여러 개면 쓰지 않는 Pod도 Stop. Terminate(휴지통 아이콘, Pod 삭제, 되돌릴 수 없음)는 누르지 않는다
+    ui_target: ["Pods (왼쪽 메뉴)", "Pod 이름", "Stop"]
+    file: null
+    command: null
+    change: null
+    save: null
+    run: null
+    result: Pod가 멈추고 GPU 시간 요금(A40 $0.60/hr)이 멈춘다. /workspace(Network Volume)의 llm-course 는 남는다
+    success_check: Pods 목록에서 내 Pod 이름 앞 초록 점이 사라짐
+    screenshots: [s26-click-stop.png]
+    logs: []
+    concept: Stop = GPU 반납·시간 요금 멈춤(/workspace 유지), Terminate = Pod 삭제(되돌릴 수 없음)
+    readme_anchor: step-26
+    scene_id: F-wrap
+    troubleshooting: [T18]
+
+troubleshooting:
+  T01: Pod 이름 앞이 초록 점이 아니거나 Jupyter Lab이 Ready가 아님 → 1~2분 기다리고 새로고침, 계속이면 Pod 상태 확인
+  T02: Ready인데 JupyterLab이 빈 화면 → 30~60초 뒤 Ctrl+Shift+R(강력 새로고침)
+  T03: Token authentication is enabled 화면 → Connect 패널의 Jupyter Lab 링크로 다시 들어가기
+  T04: New Folder 뒤 이름이 Untitled Folder로 남음 → 화면 반영 지연이거나 이름을 치기 전에 다른 곳을 클릭함. 잠시 기다리고, 그대로면 우클릭 → Rename(F2) → llm-course (바로 아래 Delete 주의)
+  T05: groups cannot find name for group ID 경고 → 무시해도 됨
+  T06: 프롬프트가 / 인데 pwd 는 /workspace/llm-course → cd /workspace/llm-course 로 확실히 이동
+  T07: nvidia-smi command not found 또는 GPU 안 보임 → GPU Pod인지, Pod가 Running인지 확인
+  T08: 명령을 연달아 빨리 입력하면 출력이 섞여 보임 → 결과가 나온 뒤 다음 명령 입력
+  T09: 붙여 넣은 코드 들여쓰기가 깨짐(IndentationError) → 6행 if 아래 7행은 공백 4칸, 코드 상자의 복사 아이콘으로 통째로 다시 복사
+  T10: python ... check_gpu.py No such file or directory → pwd 로 위치 확인, cd /workspace/llm-course. 파일 이름이 다르면(untitled.py, check_gpu.py.py) 우클릭 → Rename(F2) → check_gpu.py
+  T11: 노트북을 닫아도 VRAM이 안 줄어듦 → 탭 닫기와 커널 종료는 다르다, Kernel → Shut Down Kernel 또는 왼쪽 아이콘 줄 위에서 두 번째 Running Terminals and Kernels
+  T12: File → Shut Down 을 눌러 JupyterLab이 끊김 → RunPod 콘솔 Pod ⋮ → Restart Pod (/workspace 파일은 남음)
+  T13: "NameError: name 'torch' is not defined → 셀 1부터 순서대로, 또는 Kernel → Restart Kernel and Run All Cells…"
+  T14: 한글 입력 상태로 입력함(예 bash ㅔㅈㅇ command not found, 폴더 이름이 한글 자모) → 한/영 키로 영문 전환 후 다시 입력
+  T15: "bash: cd: /workspace/llm-course: No such file or directory → 폴더 이름이 다름(LLM-course, llm_course, Untitled Folder) → File Browser에서 확인, 우클릭 → Rename(F2) → llm-course"
+  T16: 노트북 첫 저장 때 Rename file 창이 안 뜸(S13에서 Do not ask for rename on first save 체크) → Untitled.ipynb 우클릭 → Rename(F2) → gpu_check.ipynb
+  T17: 같은 이름의 폴더·파일이 이미 있음(강의를 다시 하는 경우) → 폴더는 새로 만들지 말고 S06으로, 기존 파일은 지우지 말고 _old 이름으로 바꿔 보관
+  T18: 실습을 마쳤는데 Pods 목록에 초록 점(Running) → 요금이 계속 나감 → S26대로 Stop (Terminate는 삭제라 누르지 않음)

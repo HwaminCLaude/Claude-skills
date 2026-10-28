@@ -1,0 +1,199 @@
+{
+  "s01-click-pods-and-pod.png": {
+    "src": "s01-runpod-pods-list.png",
+    "marks": [
+      {
+        "box": [
+          26,
+          210,
+          176,
+          230
+        ],
+        "n": 1
+      },
+      {
+        "box": [
+          392,
+          249,
+          494,
+          265
+        ],
+        "n": 2,
+        "anchor": "right"
+      }
+    ]
+  },
+  "s02-click-connect-jupyter.png": {
+    "src": "s02-pod-connect-panel.png",
+    "marks": [
+      {
+        "box": [
+          925,
+          154,
+          973,
+          174
+        ],
+        "n": 1
+      },
+      {
+        "box": [
+          1023,
+          243,
+          1104,
+          260
+        ],
+        "n": 2
+      }
+    ]
+  },
+  "s04-s05-click-no-newfolder.png": {
+    "src": "s03-jupyterlab-first-screen.png",
+    "marks": [
+      {
+        "box": [
+          1523,
+          643,
+          1544,
+          661
+        ],
+        "n": 1
+      },
+      {
+        "box": [
+          107,
+          33,
+          127,
+          51
+        ],
+        "n": 2
+      }
+    ]
+  },
+  "s06-click-llm-course.png": {
+    "src": "s05f-llm-course-created-scratch.png",
+    "marks": [
+      {
+        "box": [
+          67,
+          135,
+          133,
+          151
+        ],
+        "n": 1,
+        "anchor": "right"
+      }
+    ]
+  },
+  "s07-click-terminal.png": {
+    "src": "s06-inside-llm-course.png",
+    "marks": [
+      {
+        "box": [
+          367,
+          466,
+          451,
+          549
+        ],
+        "n": 1
+      }
+    ]
+  },
+  "s12-click-python-file.png": {
+    "src": "s06-inside-llm-course.png",
+    "marks": [
+      {
+        "box": [
+          656,
+          466,
+          740,
+          549
+        ],
+        "n": 1
+      }
+    ]
+  },
+  "s15-click-terminal-tab.png": {
+    "src": "s14-check-gpu-saved.png",
+    "marks": [
+      {
+        "box": [
+          417,
+          29,
+          565,
+          47
+        ],
+        "n": 1
+      }
+    ]
+  },
+  "s16-click-notebook.png": {
+    "src": "s06-inside-llm-course.png",
+    "marks": [
+      {
+        "box": [
+          367,
+          162,
+          451,
+          246
+        ],
+        "n": 1
+      }
+    ]
+  },
+  "s23-click-run-all.png": {
+    "src": "s23a-kernel-menu.png",
+    "marks": [
+      {
+        "box": [
+          183,
+          112,
+          349,
+          128
+        ],
+        "n": 1
+      }
+    ]
+  },
+  "s23-click-restart.png": {
+    "src": "s23b-restart-dialog.png",
+    "marks": [
+      {
+        "box": [
+          908,
+          380,
+          970,
+          410
+        ],
+        "n": 2
+      }
+    ]
+  },
+  "s24-click-shutdown-kernel.png": {
+    "src": "s23a-kernel-menu.png",
+    "marks": [
+      {
+        "box": [
+          183,
+          193,
+          277,
+          209
+        ],
+        "n": 1
+      }
+    ]
+  },
+  "s26-click-stop.png": {
+    "src": "s02-pod-connect-panel.png",
+    "marks": [
+      {
+        "box": [
+          956,
+          113,
+          1016,
+          139
+        ],
+        "n": 1
+      }
+    ]
+  }
+}

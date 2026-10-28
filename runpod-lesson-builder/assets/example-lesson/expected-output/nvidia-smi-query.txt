@@ -1,0 +1,8 @@
+# log: logs/terminal-commands.ssh-rerun.log
+# after: $ nvidia-smi --query-gpu
+# nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv 성공 판별 기준 (정규식)
+^name, memory.total \[MiB\], memory.used \[MiB\]$
+^NVIDIA .+, \d+ MiB, \d+ MiB$
+# 실제 출력(2026-10-28, A40):
+#   name, memory.total [MiB], memory.used [MiB]
+#   NVIDIA A40, 46068 MiB, 0 MiB

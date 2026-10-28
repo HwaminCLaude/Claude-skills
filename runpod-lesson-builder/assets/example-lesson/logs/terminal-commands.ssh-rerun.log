@@ -1,0 +1,48 @@
+$ pwd
+/workspace/llm-course
+
+$ nvidia-smi
+Tue Oct 27 18:10:32 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 595.91.07              Driver Version: 595.91.07      CUDA Version: 13.2     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A40                     On  |   00000000:D6:00.0 Off |                    0 |
+|  0%   37C    P8             33W /  300W |       0MiB /  46068MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+$ nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+name, memory.total [MiB], memory.used [MiB]
+NVIDIA A40, 46068 MiB, 0 MiB
+
+$ python --version
+Python 3.12.3
+
+$ which python
+/usr/local/bin/python
+
+$ python check_gpu.py
+PyTorch: 2.8.0+cu128
+CUDA Available: True
+GPU: NVIDIA A40
+
+$ ls -la
+total 3
+drwxr-xr-x 2 root root 4096 Oct 27 18:09 .
+drwxrwxrwx 2 root root 4096 Oct 27 18:01 ..
+drwxr-xr-x 2 root root 4096 Oct 27 18:07 .ipynb_checkpoints
+-rw-r--r-- 1 root root  182 Oct 27 18:05 check_gpu.py
+-rw-r--r-- 1 root root 2503 Oct 27 18:09 gpu_check.ipynb
+

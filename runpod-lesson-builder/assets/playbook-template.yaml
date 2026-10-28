@@ -1,0 +1,124 @@
+# {{LESSON_ID}} 실습 원본 절차서 (Execution Playbook) — 단일 원본
+# README, troubleshooting.md, 검증 스크립트(tools/check_lesson.py)는 모두 이 파일을 기준으로 맞춘다.
+# 모든 값은 {{YYYY-MM-DD}} Pod {{A}}에서 실제로 수행·촬영한 결과다. 보충 촬영이 있으면 어디서 찍었는지 여기에 적는다.
+# 검사기 필수 필드(비면 FAIL): id, part, screen, env, result, screenshots, readme_anchor, scene_id
+#   그림을 찍지 못한 STEP만 screenshots: [] 와 not_captured: "<이유>" — README의 그 STEP 구역에 같은 이유 문구를 그대로 쓴다.
+# 나머지 필드는 해당 없으면 null 또는 생략한다. screenshots 는 screenshots/ 안의 파일 이름(마스킹본·클릭 표시본).
+# "{{…}}" 자리는 실제 값으로 바꾼다(값이 {, [, :, # 로 시작하거나 그런 글자를 품으면 따옴표를 유지한다).
+lesson:
+  id: "{{LESSON_ID}}"
+  title: "{{LESSON_TITLE}}"
+  captured_at: "{{YYYY-MM-DD HH:MM-HH:MM}} KST"
+  environment:                      # evidence-manifest.json 에 그대로 들어간다
+    gpu: "{{GPU 이름 (VRAM MiB)}}"
+    image: "{{이미지 태그}}"
+    driver: "{{드라이버 (CUDA Version)}}"
+    jupyterlab: "{{버전}}"
+    python: "{{버전 (경로)}}"
+    pytorch: "{{버전}}"
+  start_condition: "{{시작 조건 — 앞 레슨에서 이어지는 상태와 학습자가 쓰는 파이썬 환경 포함}}"
+  done_condition: "{{완료 조건 — 확인 가능한 파일·출력}}"
+
+steps:
+  - id: S01                         # S + 두 자리. README의 '(S01)'과 같다
+    part: A                         # README의 Part 글자
+    screen: RunPod 콘솔 (console.runpod.io)   # 이 단계가 시작될 때 보이는 화면
+    env: 브라우저                    # 브라우저 / 브라우저(JupyterLab) / Bash (JupyterLab Terminal) / Notebook 커널
+    cwd: null                       # Terminal 단계의 현재 폴더
+    action: "{{화면에서 하는 행동 — UI 라벨 그대로}}"
+    ui_target: ["{{라벨 1}}", "{{라벨 2}}"]
+    file: null                      # 만들거나 고치는 파일의 Pod 안 전체 경로
+    command: null                   # Terminal에 입력하는 명령(여러 줄이면 | 블록)
+    change: null                    # new / modify
+    save: null                      # 저장 방법
+    run: null                       # 실행 방법
+    result: "{{실제로 나타난 화면·출력}}"
+    success_check: "{{학습자가 확인할 기준}}"
+    screenshots: ["s01-click-{{대상}}.png"]   # 콘솔 화면은 메인 세션이 미리 찍은 _raw 원본에서
+    logs: []
+    concept: "{{이 단계에서 익히는 개념 한 줄}}"
+    readme_anchor: step-1           # README의 <a id="step-1"></a>
+    scene_id: A-connect             # 짧은 구역 이름(영상 장면을 만들 때 그대로 쓴다)
+    troubleshooting: [T01]
+  - id: S02
+    part: A
+    screen: JupyterLab Terminal
+    env: Bash (JupyterLab Terminal)
+    cwd: "{{POD_ROOT}}/chNN"
+    command: |
+      {{명령 1}}
+      {{명령 2}}
+    result: "{{실제 출력 요약}}"
+    success_check: "{{기준}}"
+    screenshots: ["s02-{{대상}}.png"]
+    logs: ["logs/{{로그}}.ssh-rerun.log"]   # 첫 줄 '# source: ssh-rerun (Pod A, 날짜, 화면 STEP 2)'
+    expected_output: "expected-output/{{기대출력}}.txt"
+    readme_anchor: step-2
+    scene_id: A-connect
+  - id: S03
+    part: B
+    screen: JupyterLab 편집기
+    env: 브라우저(JupyterLab)
+    action: "Launcher의 Python File → 코드를 붙여 넣고(Ctrl+V, Mac ⌘V) 처음으로 Ctrl+S → Rename file 에 lMM_{{설명}} 만 입력 → Rename and Save"
+    ui_target: ["Python File", "편집기", "Rename file", "Rename and Save"]
+    file: "{{POD_ROOT}}/chNN/lMM_{{설명}}.py"
+    code_file: "code/lMM_{{설명}}.py"
+    change: new
+    save: 첫 Ctrl+S → Rename file → Rename and Save
+    run: "python lMM_{{설명}}.py"
+    result: "{{실제 출력}}"
+    success_check: "{{기준}}"
+    screenshots: [s03a-code-pasted.png, s03b-rename-dialog.png, s03c-run-result.png]   # jlab new_file_paste 로 촬영
+    logs: ["logs/{{로그}}.log"]
+    readme_anchor: step-3
+    scene_id: B-code
+    troubleshooting: [T02]
+  - id: S04
+    part: B
+    screen: JupyterLab Launcher
+    env: 브라우저(JupyterLab)
+    action: "+ (New Launcher) → Notebook 구역의 {{커널 이름}}(Console 구역 아님) → 첫 Ctrl+S → Rename file 에 lMM_{{설명}} → Rename and Save"
+    ui_target: ["+ (New Launcher)", "{{커널 이름}}", "Rename and Save"]
+    file: "{{POD_ROOT}}/chNN/lMM_{{설명}}.ipynb"
+    change: new
+    save: 첫 Ctrl+S → Rename file → Rename and Save
+    result: "탭 이름 lMM_{{설명}}.ipynb, 상태 표시줄 {{커널 이름}} | Idle"
+    success_check: "Idle (Connecting 이면 몇 초 기다림)"
+    screenshots: [s04a-click-notebook.png, s04b-kernel-idle.png]
+    readme_anchor: step-4
+    scene_id: B-code
+  - id: S05
+    part: B
+    screen: JupyterLab Notebook
+    env: Notebook 커널 ({{커널 이름}})
+    action: "셀 {{N}} 코드를 맨 아래 빈 셀에 붙여 넣고 Shift+Enter"
+    code_file: "notebooks/cells/cell{{N}}.py"
+    result: "{{실제 출력 — 화면에 찍힌 그 실행의 값}}"
+    screenshots: ["s05-cell{{N}}.png"]
+    readme_anchor: step-5
+    scene_id: B-code
+  - id: S06
+    part: C
+    screen: JupyterLab Notebook ↔ Terminal
+    env: 브라우저 + Bash
+    action: Kernel → Shut Down Kernel(File → Shut Down 아님), Terminal에서 확인
+    result: "{{실제 결과}}"
+    success_check: "{{기준}}"
+    screenshots: ["s06-{{대상}}.png"]
+    readme_anchor: step-6
+    scene_id: C-wrap
+  # 그림을 찍지 못한 STEP의 예(콘솔 확인 창처럼 찍을 수 없었던 화면):
+  # - id: S07
+  #   part: C
+  #   screen: RunPod 콘솔 → Pod 상세 패널
+  #   env: 브라우저
+  #   action: "{{공식 문서 기준 행동}}"
+  #   result: "실행하지 않음({{이유}})"
+  #   screenshots: []
+  #   not_captured: "촬영하지 않음: {{이유}}"      # README의 S07 구역에 이 문구를 그대로
+  #   readme_anchor: step-7
+  #   scene_id: C-wrap
+
+troubleshooting:                    # README 10절, troubleshooting.md 와 같은 ID
+  T01: "{{증상}} → {{해결}}"
+  T02: "{{증상}} → {{해결}}"
