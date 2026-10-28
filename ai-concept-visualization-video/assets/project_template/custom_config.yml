@@ -1,0 +1,14 @@
+# ai-concept-visualization-video project config.
+# Keys follow <venv>/Lib/site-packages/manimlib/default_config.yml.
+# manimgl reads custom_config.yml from the cwd where the render runs.
+# Values are set explicitly even when they match the fork defaults.
+# Keep this file ASCII-only: manimlib reads it with the locale encoding (cp949 on Korean Windows).
+directories:
+  subdirs:
+    output: "videos"
+camera:
+  resolution: (1920, 1080)
+  background_color: "#000000"
+  fps: 60
+text:
+  font: "Noto Sans KR"

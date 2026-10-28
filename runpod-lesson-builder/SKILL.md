@@ -1,6 +1,6 @@
 ---
 name: runpod-lesson-builder
-description: RunPod GPU Pod에서 실제로 실행한 결과로 비개발자가 혼자 따라 하는 독립형 실습 README(레슨 폴더 단위)를 만드는 스킬. 시작할 때 사람이 정할 것(범위·산출물·Pod·비용·병렬·끝난 뒤 처리)을 먼저 조사하고 대화형으로 물어 기록한 뒤 진행한다. 헤드리스 JupyterLab 실화면 캡처와 민감정보 마스킹, STEP별 해설 대본, README만 보고 재현되는지 검증, 여러 Pod에 레인을 나눈 병렬 제작을 다룬다. 사용자가 "RunPod 실습 교재 만들어줘", "실제 Pod에서 실행해서 README로", "JupyterLab 화면 캡처해서 따라하기 문서", "RunPod 레슨 README만 보고 재현되는지 검증", "RunPod 실습 README에 STEP별 해설 대본 붙여줘", "RunPod 레슨 README 품질 검사", "RunPod 실습 챕터 여러 개 병렬로 제작", "이 과정 다음 레슨 이어서 만들어줘", "남은 챕터 README 전부 만들어줘", "제작 끝났으면 REPORT.md 쓰고 Pod Stop해줘"라고 할 때 사용한다. 노션 변환은 pdf-to-notion이나 code-guidebook-notion, 영상 제작은 imcommit-style-video를 쓴다.
+description: RunPod GPU Pod에서 실제로 실행한 결과로 비개발자가 혼자 따라 하는 독립형 실습 README(레슨 폴더 단위)를 만드는 스킬. 시작할 때 사람이 정할 것(범위·산출물·Pod·비용·병렬·끝난 뒤 처리)을 먼저 조사하고 대화형으로 물어 기록한 뒤 진행한다. 헤드리스 JupyterLab 실화면 캡처와 민감정보 마스킹, STEP별 해설 대본, README만 보고 재현되는지 검증, 여러 Pod에 레인을 나눈 병렬 제작을 다룬다. 사용자가 "RunPod 실습 교재 만들어줘", "실제 Pod에서 실행해서 README로", "JupyterLab 화면 캡처해서 따라하기 문서", "RunPod 레슨 README만 보고 재현되는지 검증", "RunPod 실습 README에 STEP별 해설 대본 붙여줘", "RunPod 레슨 README 품질 검사", "RunPod 실습 챕터 여러 개 병렬로 제작", "이 과정 다음 레슨 이어서 만들어줘", "남은 챕터 README 전부 만들어줘", "제작 끝났으면 REPORT.md 쓰고 Pod Stop해줘"라고 할 때 사용한다. 노션 변환은 pdf-to-notion이나 code-guidebook-notion, 영상 제작은 ai-concept-visualization-video를 쓴다.
 ---
 
 # runpod-lesson-builder
@@ -154,5 +154,5 @@ cd "/d/<과정>" && tools/pod.sh A 'nvidia-smi -L'                              
 
 ## 하지 않는 것
 - 실행 없이 예상 출력으로 README 쓰기, 남의 화면이나 이미지 생성으로 실화면 대신하기.
-- 사용자가 요청하지 않은 레슨의 영상(`storyboard.md`·`narration.md` 포함) 만들기 — 요청이 오면 그 레슨의 README·해설 대본·마스킹 그림을 입력으로 `imcommit-style-video`를 쓴다.
+- 사용자가 요청하지 않은 레슨의 영상(`storyboard.md`·`narration.md` 포함) 만들기 — 요청이 오면 그 레슨의 README·해설 대본·마스킹 그림을 입력으로 `ai-concept-visualization-video`를 쓴다.
 - 검사기를 느슨하게 고쳐 FAIL을 없애기. FAIL은 레슨을 고쳐서 없앤다.

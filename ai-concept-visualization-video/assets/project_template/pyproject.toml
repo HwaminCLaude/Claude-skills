@@ -1,0 +1,19 @@
+[project]
+name = "{{name}}"
+version = "0.1.0"
+description = "ai-concept-visualization-video project (ManimGL fork + raenimgl)"
+requires-python = "==3.10.18"
+dependencies = [
+    "manimgl",
+    "raenimgl",
+    "av",
+    "matplotlib",
+    "pymupdf",
+    "fonttools",
+    "opencv-python",
+    "pytest",
+]
+
+[tool.uv.sources]
+manimgl = { git = "https://github.com/CodingVillainKor/manimgl" }
+raenimgl = { git = "https://github.com/CodingVillainKor/raenimgl.git" }

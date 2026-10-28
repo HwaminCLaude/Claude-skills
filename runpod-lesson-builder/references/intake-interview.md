@@ -36,7 +36,7 @@
 | 대상 | 누가 따라 하나요? | 코딩을 모르는 비개발자 / 개발 입문자 / 실무 개발자 | 레슨 하나(아래 기본값) |
 | 커리큘럼 | 레슨 목록은 어떻게 정할까요? | 주제를 받아 초안을 제안하고 확인받기 / 직접 목록 제공 | 레슨 하나, 이어 만들기 |
 
-영상을 고르면 이어서 묻는다: header '영상 레슨'(5자), multiSelect. 레슨 후보가 4개 이하일 때만 그 레슨을 선택지로 보인다(레슨 하나면 묻지 않고 그 레슨). 더 많거나 커리큘럼이 아직 없으면 질문에 '지금 정하려면 레슨 ID를 기타에 적어 주세요(예: C02-L02)'를 넣고 선택지 '커리큘럼이 정해진 뒤 고르기(권장) / 파일럿 레슨만'으로 묻는다. '커리큘럼이 정해진 뒤'면 `video_lessons: []`로 두고, curriculum을 확인받을 때 다시 묻는다('바뀐 기록'에 남김). '파일럿 레슨만'이면 파일럿 ID가 정해진 뒤 `video_lessons`에 적는다. 영상은 `imcommit-style-video`로 따로 만든다.
+영상을 고르면 이어서 묻는다: header '영상 레슨'(5자), multiSelect. 레슨 후보가 4개 이하일 때만 그 레슨을 선택지로 보인다(레슨 하나면 묻지 않고 그 레슨). 더 많거나 커리큘럼이 아직 없으면 질문에 '지금 정하려면 레슨 ID를 기타에 적어 주세요(예: C02-L02)'를 넣고 선택지 '커리큘럼이 정해진 뒤 고르기(권장) / 파일럿 레슨만'으로 묻는다. '커리큘럼이 정해진 뒤'면 `video_lessons: []`로 두고, curriculum을 확인받을 때 다시 묻는다('바뀐 기록'에 남김). '파일럿 레슨만'이면 파일럿 ID가 정해진 뒤 `video_lessons`에 적는다. 영상은 `ai-concept-visualization-video`로 따로 만든다.
 
 ### 묶음 2 — Pod와 비용
 | header | 질문 | 선택지(첫째가 권장) | 건너뛰는 때 |
@@ -91,7 +91,7 @@ Terminate와 Network Volume 삭제는 선택지에 넣지 않는다. 되돌릴 �
 | 결정(앞머리 키) | 바뀌는 곳 |
 |---|---|
 | 범위(`scope`) | 파일럿 먼저 → Phase 3·4 뒤에 멈추고 보고 / 전체 → Phase 5까지 / 레슨 하나 → SKILL.md '레슨 하나만' / 이어 만들기 → workflow.md '이어 만들기' 점검부터 |
-| 산출물(`deliverables`, `narration`, `video_lessons`) | 'README + 해설 대본' → `deliverables: readme+narration`, `narration: true` / 'README만' → `deliverables: readme`, `narration: false`(check_lesson이 해설 대본 항목을 건너뛰고 NOTE를 찍는다) / '+ 영상' → `deliverables: readme+narration+video`, `narration: true`, `video_lessons: [레슨 ID]`(README가 끝난 뒤 `imcommit-style-video`로 따로). 검사기는 `narration`만 읽는다 |
+| 산출물(`deliverables`, `narration`, `video_lessons`) | 'README + 해설 대본' → `deliverables: readme+narration`, `narration: true` / 'README만' → `deliverables: readme`, `narration: false`(check_lesson이 해설 대본 항목을 건너뛰고 NOTE를 찍는다) / '+ 영상' → `deliverables: readme+narration+video`, `narration: true`, `video_lessons: [레슨 ID]`(README가 끝난 뒤 `ai-concept-visualization-video`로 따로). 검사기는 `narration`만 읽는다 |
 | 대상(`audience`) | README 말투·설명 깊이와 레슨 프롬프트의 대상 문구(LESSON_GUIDE 3행). 묻지 않았으면 `non-developer` |
 | 커리큘럼(`curriculum`) | `propose` → 0-4 보고 때 curriculum.md 초안(챕터·레슨 수)을 보여 확인받는다 / `given` → 받은 목록 그대로 쓴다 |
 | 기록 시각(`decided_at`) | 질문하지 않는다. 4절 '확인'을 받은 시각(KST). 결정이 바뀌면 이 값은 두고 '바뀐 기록'에 줄을 더한다 |

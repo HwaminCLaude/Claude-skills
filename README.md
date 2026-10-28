@@ -2,13 +2,13 @@
 
 [Claude Code](https://docs.anthropic.com/claude-code) 에서 쓰는 **재사용 스킬(skill)** 저장소입니다.
 강의자료(PDF/PPTX)·보고서 PDF·코드 노트북(.ipynb)·소스 코드베이스·강의 영상+자막·연구 논문을
-**공부할 수 있는 형태**로 자동 변환하거나, 실제 GPU에서 돌려 **따라 하는 실습 교재**로 만드는 아홉 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
+**공부할 수 있는 형태**로 자동 변환하거나, 실제 GPU에서 돌려 **따라 하는 실습 교재**로 만드는 열 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
 
 출력 대상은 네 갈래입니다.
 
 - **Notion 페이지로** — 여섯 스킬 (`*-notion`). Notion 통합 토큰·rclone 등이 필요합니다.
 - **로컬 HTML 파일로** — `notebook-explainer` 하나. **외부 서비스·API 키가 필요 없습니다.**
-- **영상(mp4)과 대본으로** — `paper-to-manim-video` 하나. Manim으로 렌더하며 **Notion을 쓰지 않습니다.**
+- **영상(mp4)과 대본으로** — `paper-to-manim-video`, `ai-concept-visualization-video` 둘. Manim으로 렌더하며 **Notion을 쓰지 않습니다.**
 - **실습 교재 폴더(README)로** — `runpod-lesson-builder` 하나. RunPod GPU Pod에서 **실제로 실행·촬영한 결과**로 비개발자용 따라 하기 README를 만듭니다. Notion 대신 **RunPod 계정**이 필요합니다.
 
 ## 📦 포함된 스킬
@@ -23,6 +23,7 @@
 | [`curriculum-notion/`](./curriculum-notion) | **curriculum-notion** | 강의자료 묶음 → **기초 0인 사람이 from scratch로 따라가는 학습 커리큘럼**(주차 페이지 + 유닛 중첩 DB + **자동 채점되는 Colab 노트북**) |
 | [`notebook-explainer/`](./notebook-explainer) | **notebook-explainer** | 노트북·스크립트 → **단일 HTML 인터랙티브 해설**. 코드 줄마다 클릭 설명 + **텐서 shape 변화·모델 구조 위젯**(층 클릭 ↔ 코드 줄 하이라이트). 모든 수치는 노트북 출력에서 읽은 실제 값. **Notion·API 키 불필요** |
 | [`paper-to-manim-video/`](./paper-to-manim-video) | **paper-to-manim-video** | 논문 PDF·코드 → **3Blue1Brown 계열 한국어 교육 영상**. 나레이션 대본과 Manim 씬 코드를 `shots.json` 하나에서 함께 만들어 **낭독 시간과 영상 길이를 자동으로 일치**시키고, 1080p60 mp4 + `script.md` + `.srt` 까지 뽑습니다. **Notion 불필요** |
+| [`ai-concept-visualization-video/`](./ai-concept-visualization-video) | **ai-concept-visualization-video** | 논문·모델·코드·주제 → **AI 개념 시각화 한국어 영상**(ManimGL + raenimgl). 자막 큐(약 2초)마다 연출이 있는 씬을 렌더하고 하단 자막(+ edge-tts 음성)을 구워 mp4까지. 검정 배경·토큰 디자인·흐름 문법, 린트와 박자·디자인 측정으로 검사. **Notion 불필요** |
 | [`runpod-lesson-builder/`](./runpod-lesson-builder) | **runpod-lesson-builder** | 주제 → **RunPod Pod에서 실제로 실행한 결과로 만든 레슨별 독립형 실습 README**(STEP마다 실화면·모자이크, 🎙️ 해설 대본, 로그·기대 출력, 품질 검사). 시작할 때 범위·산출물·Pod·비용을 **먼저 대화형으로 묻고**, 여러 Pod로 병렬 제작한 뒤 내용 검토·REPORT까지 하고 **쓴 Pod를 Stop**합니다. **Notion 불필요** |
 
 각 스킬 폴더 안의 `README.md` 에 상세 사용법이 있습니다.
@@ -55,6 +56,11 @@ Claude-skills/
 │   ├── README.md
 │   ├── scripts/                  ← 01_scan·02_upload_videos·03_build_pages·04_sync_videos·06_verify·dashboard
 │   └── references/               ← CONFIG.md · GOTCHAS.md
+├── curriculum-notion/
+│   ├── SKILL.md
+│   ├── README.md
+│   ├── scripts/                  ← curriculum·publish_skeleton·publish_all·build_unit_notebook·run_weeks·verify_*
+│   └── references/               ← AUTHORING_CONTRACT.md · example_curriculum.json · example_unit_W04U05.py
 ├── notebook-explainer/           ← Notion을 쓰지 않는 스킬 (로컬 HTML 출력)
 │   ├── SKILL.md
 │   ├── README.md
@@ -69,6 +75,16 @@ Claude-skills/
 │   ├── references/               ← imcommit-style-guide · raenim-api · narration ·
 │   │                                generated-imagery · troubleshooting
 │   └── assets/                   ← manim 프로젝트 템플릿 · noise 순수파이썬 shim
+├── ai-concept-visualization-video/  ← Notion을 쓰지 않는 스킬 (ManimGL 영상 + 자막 mp4 출력)
+│   ├── SKILL.md
+│   ├── README.md
+│   ├── scripts/                  ← scaffold·setup_env·preflight·fetch_examples·parse_paper·parse_code·
+│   │                                crop_figure·tts·cues·lint·render·captions·assemble·
+│   │                                measure_motion·measure_design·sweep_frames
+│   ├── references/               ← shots-schema · narration-voice · captions · flow-grammar · design-system ·
+│   │                                onscreen-text · raenimgl-api · example-corpus · troubleshooting
+│   ├── assets/                   ← ManimGL 프로젝트 틀(pyproject · custom_config · vizkit · main 틀)
+│   └── tests/                    ← pytest
 └── runpod-lesson-builder/        ← Notion을 쓰지 않는 스킬 (RunPod 실습 README 폴더 출력)
     ├── SKILL.md
     ├── README.md
@@ -101,6 +117,7 @@ Copy-Item -Recurse -Force .\video-transcript-notion $dst\
 Copy-Item -Recurse -Force .\curriculum-notion       $dst\
 Copy-Item -Recurse -Force .\notebook-explainer      $dst\
 Copy-Item -Recurse -Force .\paper-to-manim-video    $dst\
+Copy-Item -Recurse -Force .\ai-concept-visualization-video $dst\
 Copy-Item -Recurse -Force .\runpod-lesson-builder   $dst\
 ```
 
@@ -109,13 +126,13 @@ Copy-Item -Recurse -Force .\runpod-lesson-builder   $dst\
 mkdir -p ~/.claude/skills
 cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-notion \
       video-transcript-notion curriculum-notion notebook-explainer paper-to-manim-video \
-      runpod-lesson-builder \
+      runpod-lesson-builder ai-concept-visualization-video \
       ~/.claude/skills/
 ```
 
 > oh-my-claudecode(OMC)를 쓴다면 `/oh-my-claudecode:skill add <경로>` 로 등록할 수도 있습니다.
 
-설치 후 Claude Code 세션에서 "이 폴더 PDF들 노션에 올려줘", "노트북 가이드북 만들어줘", "강의 영상이랑 대본 노션에 정리해줘", "RunPod 실습 교재 만들어줘" 처럼 말하면 해당 스킬이 자동으로 호출됩니다.
+설치 후 Claude Code 세션에서 "이 폴더 PDF들 노션에 올려줘", "노트북 가이드북 만들어줘", "강의 영상이랑 대본 노션에 정리해줘", "RunPod 실습 교재 만들어줘", "이 논문으로 AI 개념 시각화 영상 만들어줘" 처럼 말하면 해당 스킬이 자동으로 호출됩니다.
 
 ## 🔧 사전 준비 (공통)
 
@@ -141,6 +158,12 @@ cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-not
 > (`noise` 패키지는 cp311 휠이 없어 빌드가 실패하는 게 정상이며, 순수 파이썬 shim으로 자동 대체됩니다).
 > **codex CLI** 가 있으면 은유 컷을 이미지 생성으로 채우고, 없으면 그 노드만 꺼진 채 전 구간 Manim 작도로 진행합니다.
 > 작업 폴더는 **ASCII 경로**(`C:\manimwork\<slug>`)로 잡으세요 — MiKTeX가 한글 경로에서 실패합니다.
+
+> **`ai-concept-visualization-video` 도 Notion·rclone을 쓰지 않습니다** — 대신
+> [**uv**](https://docs.astral.sh/uv/)(프로젝트 venv, Python 3.10.18은 uv가 받음), **git**, **FFmpeg**(`subtitles` 필터·libass), **LaTeX(MiKTeX)**,
+> 글꼴 **Noto Sans KR**(자막용 정적 `NotoSansKR-Medium.ttf` 포함)이 필요합니다. ManimGL 포크와 `raenimgl` 은 `scripts/setup_env.py` 의 `uv sync` 가 GitHub에서 받습니다.
+> 연출 예시 코퍼스는 저장소에 넣지 않았습니다(원본에 라이선스 파일이 없음). 필요하면 `scripts/fetch_examples.py` 로 원본 공개 저장소에서 받습니다.
+> 작업 폴더는 **ASCII 경로**(`C:\manimwork\<slug>`)로 잡으세요.
 
 > **`runpod-lesson-builder` 는 준비물이 완전히 다릅니다** — Notion·rclone 대신
 > **RunPod 계정**(크레딧, Credentials → SSH Public Keys의 **SSH 공개키 등록**), RunPod에 로그인한 **Claude in Chrome** 확장, **Git Bash**(Windows),
@@ -174,6 +197,10 @@ cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-not
 > **환경 검증 → 논문/코드 파싱 → 시리즈 편성(CP1) → 대본+shots.json(CP2) → 씬 코드 →
 > 스모크 렌더 → 본번 렌더 → 길이 정합 검증(CP3)** 8단계이고, Drive·Notion 단계가 없습니다.
 > 체크포인트 세 곳에서 사람의 승인을 받습니다.
+
+> `ai-concept-visualization-video` 도 이 흐름을 따르지 않습니다 —
+> **준비(scaffold·uv·preflight) → 입력 → 편성(사용자 확인) → 대본 shots.json(사용자 검토) → 음성(tts) → 씬 코드 →
+> 린트·스모크 렌더 → 본번 렌더 → 합치기(자막·음성) → 측정·프레임 스윕·보고** 순서이고, Drive·Notion 단계가 없습니다.
 
 > `runpod-lesson-builder` 도 이 흐름을 따르지 않습니다 —
 > **시작 인터뷰 → 사전 점검·승인 → Pod 환경 → 파일럿 레슨(실행·실화면·README·품질 검사) → README만 보고 재현 검증 →

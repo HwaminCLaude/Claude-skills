@@ -4,3 +4,5 @@ __pycache__/
 .DS_Store
 Thumbs.db
 .omc/
+# 예시 코퍼스는 scripts/fetch_examples.py로 받는다(다시 배포하지 않음). references/ 아래 하위 폴더는 모두 받은 것이다
+ai-concept-visualization-video/references/*/

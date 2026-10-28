@@ -31,7 +31,7 @@
 | 도구(Pod) | `tools/pod.sh A 'uv --version; tmux -V; git --version'` |
 | 도구(Claude 쪽) | 쓸 수 있는 도구에 Workflow, CronCreate·CronList·CronDelete, TaskStop이 있는지, `workflow-authoring`·`claude-in-chrome` 스킬, `bash --version`(Git Bash). 없으면 대안: README-only는 서브에이전트 2개(`verification.md` 2절), 병렬 제작은 레인별 서브에이전트(`parallel-production.md` 5절), 야간 점검을 못 걸면 사용자에게 알리고 끝난 뒤 메인 세션이 직접 마무리 |
 | Codex(선택) | `codex --version` — 읽기 전용 교차 리뷰에만 쓴다 |
-| 영상 스킬(선택) | 사용자가 영상을 원할 때만 `imcommit-style-video` 준비 상태 확인 |
+| 영상 스킬(선택) | 사용자가 영상을 원할 때만 `ai-concept-visualization-video` 준비 상태 확인 |
 | 로컬 PC | `python -c "import playwright, PIL, yaml, nbformat"` — 없으면 `python -m pip install playwright pillow pyyaml nbformat`, 브라우저는 `python -m playwright install chromium` |
 
 ### 0-2. 실측 체크리스트 (새 과정·새 템플릿이면 다시 확인)
