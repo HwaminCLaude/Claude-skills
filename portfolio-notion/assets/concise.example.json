@@ -1,0 +1,7 @@
+{
+  "sglang": {"title": "SGLang KV 선점 최적화", "result": "선점 19→0건, goodput +9.1%"},
+  "hoseo_research": {"title": "교원실적보고서 자동화 포털", "result": "11개년·134개교, pytest 340, 웹 배포"},
+  "logistic_consulting": {"title": "로지스틱회귀 상담(호서대)", "result": "산업재해 548·54건 분석·보고서"},
+  "smartcity_staff": {"title": "스마트시티 조성사업단 회계/재무", "result": "예산·회계·입찰 실무 1년"},
+  "python_tool": {"title": "Python", "result": "전 프로젝트 주 언어"}
+}

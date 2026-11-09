@@ -2,11 +2,11 @@
 
 [Claude Code](https://docs.anthropic.com/claude-code) 에서 쓰는 **재사용 스킬(skill)** 저장소입니다.
 강의자료(PDF/PPTX)·보고서 PDF·코드 노트북(.ipynb)·소스 코드베이스·강의 영상+자막·연구 논문을
-**공부할 수 있는 형태**로 자동 변환하거나, 실제 GPU에서 돌려 **따라 하는 실습 교재**로 만드는 아홉 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
+**공부할 수 있는 형태**로 자동 변환하거나, 실제 GPU에서 돌려 **따라 하는 실습 교재**로 만들고, 자료 근거로 **Notion 포트폴리오**를 구축하는 열 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
 
 출력 대상은 네 갈래입니다.
 
-- **Notion 페이지로** — 여섯 스킬 (`*-notion`). Notion 통합 토큰·rclone 등이 필요합니다.
+- **Notion 페이지로** — 일곱 스킬 (`*-notion`). Notion 통합 토큰·rclone 등이 필요합니다.
 - **로컬 HTML 파일로** — `notebook-explainer` 하나. **외부 서비스·API 키가 필요 없습니다.**
 - **영상(mp4)과 대본으로** — `paper-to-manim-video` 하나. Manim으로 렌더하며 **Notion을 쓰지 않습니다.**
 - **실습 교재 폴더(README)로** — `runpod-lesson-builder` 하나. RunPod GPU Pod에서 **실제로 실행·촬영한 결과**로 비개발자용 따라 하기 README를 만듭니다. Notion 대신 **RunPod 계정**이 필요합니다.
@@ -23,6 +23,7 @@
 | [`curriculum-notion/`](./curriculum-notion) | **curriculum-notion** | 강의자료 묶음 → **기초 0인 사람이 from scratch로 따라가는 학습 커리큘럼**(주차 페이지 + 유닛 중첩 DB + **자동 채점되는 Colab 노트북**) |
 | [`notebook-explainer/`](./notebook-explainer) | **notebook-explainer** | 노트북·스크립트 → **단일 HTML 인터랙티브 해설**. 코드 줄마다 클릭 설명 + **텐서 shape 변화·모델 구조 위젯**(층 클릭 ↔ 코드 줄 하이라이트). 모든 수치는 노트북 출력에서 읽은 실제 값. **Notion·API 키 불필요** |
 | [`paper-to-manim-video/`](./paper-to-manim-video) | **paper-to-manim-video** | 논문 PDF·코드 → **3Blue1Brown 계열 한국어 교육 영상**. 나레이션 대본과 Manim 씬 코드를 `shots.json` 하나에서 함께 만들어 **낭독 시간과 영상 길이를 자동으로 일치**시키고, 1080p60 mp4 + `script.md` + `.srt` 까지 뽑습니다. **Notion 불필요** |
+| [`portfolio-notion/`](./portfolio-notion) | **portfolio-notion** | GitHub·Drive·기존 Notion·링크드인 자료 → **마스터 DB 1개 + 갤러리 탭·활동 차트·타임라인 연결 뷰**의 Notion 포트폴리오. 상단에 링크드인 소개 구조의 Highlights(숫자 중심 6줄 + 3단 컬럼 이력), 항목 페이지마다 요약 quote와 결과 표·비용·산출물 절. **수치는 README·원고 등 산출물에서 확인된 것만**, 이모지·작성 과정 문구 없음 |
 | [`runpod-lesson-builder/`](./runpod-lesson-builder) | **runpod-lesson-builder** | 주제 → **RunPod Pod에서 실제로 실행한 결과로 만든 레슨별 독립형 실습 README**(STEP마다 실화면·모자이크, 🎙️ 해설 대본, 로그·기대 출력, 품질 검사). 시작할 때 범위·산출물·Pod·비용을 **먼저 대화형으로 묻고**, 여러 Pod로 병렬 제작한 뒤 내용 검토·REPORT까지 하고 **쓴 Pod를 Stop**합니다. **Notion 불필요** |
 
 각 스킬 폴더 안의 `README.md` 에 상세 사용법이 있습니다.
@@ -55,6 +56,12 @@ Claude-skills/
 │   ├── README.md
 │   ├── scripts/                  ← 01_scan·02_upload_videos·03_build_pages·04_sync_videos·06_verify·dashboard
 │   └── references/               ← CONFIG.md · GOTCHAS.md
+├── portfolio-notion/
+│   ├── SKILL.md
+│   ├── README.md
+│   ├── scripts/                  ← evidence_github·evidence_drive·00_backup ~ 10_highlights_layout
+│   ├── references/               ← WORKFLOW · SCHEMA · STYLE · NOTION_API_GOTCHAS
+│   └── assets/                   ← portfolio.config.example · schema · items/highlights/page_spec/concise 예시
 ├── notebook-explainer/           ← Notion을 쓰지 않는 스킬 (로컬 HTML 출력)
 │   ├── SKILL.md
 │   ├── README.md

@@ -1,0 +1,39 @@
+{
+  "sglang": {
+    "page_id": "317734f9-1be4-837a-a448-01d56c16313c",
+    "title": "SGLang KV 선점 최적화",
+    "section": "AI Project", "type": "Project", "status": "완료",
+    "period": {"start": "2026-09-03", "end": "2026-10-02"},
+    "result": "선점 19→0건, goodput +9.1%",
+    "long_result": "SGLang 0.5.18 장문 서빙의 KV 선점 정지 진단·제거: 선점 19→0건, p99 최장 토큰 간격 63.1s→0.11s, goodput +9.1% (비용: TTFT p99 +43.6%)",
+    "role": "요청별 로그 분석, 기존 입장 검사의 radix-cache 경로 이식(+102/−0줄), 실험 자동화(53런), 결과 해석·정정(ERRATA)",
+    "stack": ["Python", "SGLang", "PyTorch", "Qwen3-4B", "CUDA", "RTX 4090"],
+    "org": "LLM 추론엔진 스터디(개인과제)",
+    "github": "https://github.com/HwaminJung00/sglang-peak-kv-admission",
+    "sort": 1,
+    "related": ["nmfc_paper"]
+  },
+  "nmfc_series": {
+    "title": "NMFC 재현·절제 시리즈",
+    "section": "AI Project", "type": "Project", "status": "완료",
+    "period": {"start": "2026-07-13", "end": "2026-07-18"},
+    "result": "저장소 7개, Top-1 0.670→0.845",
+    "long_result": "NMFC 원논문 3버전(v1/v3/v4) PyTorch 재현과 응용·절제 4종: hinge_temp 로짓으로 Top-1 0.670→0.845, sphere −J로 OOD 0.488→0.932, 개방셋 novel 5.5% vs softmax 0%",
+    "role": "구현 · 실험 · README 결과 기록(공동연구의 실험 담당)",
+    "stack": ["Python", "PyTorch", "ResNet-50", "CIFAR-100"],
+    "org": "NMFC 공동연구",
+    "github": "https://github.com/Junghwamin/NMFC-plan1-v1-reproduction",
+    "image": "https://opengraph.githubassets.com/1/Junghwamin/NMFC-plan1-v1-reproduction",
+    "sort": 2,
+    "related": ["nmfc_paper"]
+  },
+  "python_tool": {
+    "page_id": "ed5734f9-1be4-82e7-89d3-016eb0264a23",
+    "title": "Python",
+    "section": "About Me", "type": "Tool", "status": null, "period": null,
+    "result": "전 프로젝트 주 언어",
+    "role": "", "stack": [], "org": "",
+    "github": "https://github.com/HwaminJung00/sglang-peak-kv-admission",
+    "sort": 5
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "sections": [
+    {"name": "About Me", "color": "default"},
+    {"name": "스마트시티 조성사업(호서대 산학협력단)", "color": "brown"},
+    {"name": "통계분석의뢰", "color": "orange"},
+    {"name": "내부과제(대학원)", "color": "yellow"},
+    {"name": "수상경력", "color": "red"},
+    {"name": "공모전/학회 활동", "color": "pink"},
+    {"name": "외부/내부 강의", "color": "purple"},
+    {"name": "수료증", "color": "blue"},
+    {"name": "자격증", "color": "green"},
+    {"name": "AI Project", "color": "blue"},
+    {"name": "웹사이트", "color": "gray"},
+    {"name": "Paper", "color": "purple"},
+    {"name": "Researcher", "color": "green"}
+  ],
+  "types": [
+    {"name": "Project", "color": "blue"},
+    {"name": "Paper", "color": "purple"},
+    {"name": "Award", "color": "red"},
+    {"name": "Competition", "color": "orange"},
+    {"name": "Presentation", "color": "pink"},
+    {"name": "Teaching", "color": "yellow"},
+    {"name": "Learning", "color": "green"},
+    {"name": "Certification", "color": "brown"},
+    {"name": "Research", "color": "default"},
+    {"name": "Career", "color": "gray"},
+    {"name": "Consulting", "color": "orange"},
+    {"name": "Education", "color": "blue"},
+    {"name": "Tool", "color": "default"}
+  ],
+  "extra_properties": {},
+  "keep_properties": ["이름", "섹션", "분류", "기간", "시기", "상태", "한줄 성과", "역할", "기술 스택", "기관·주최", "GitHub", "배포 링크", "논문/자료 링크", "파일", "관련 항목", "정렬"]
+}

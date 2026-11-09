@@ -1,0 +1,63 @@
+{
+  "main_page_id": "<portfolio page id, dashed uuid>",
+  "data_page_title": "포트폴리오 데이터(원본)",
+  "db_title": "Portfolio Items",
+  "schema": "schema.json",
+  "timeline_center": "2025-09-01",
+
+  "existing_databases": {
+    "About Me": "<inline database id, restructure mode only>",
+    "Work": "<inline database id>"
+  },
+  "delete_pages": ["<blank rows / placeholder cards to trash>"],
+  "cleanup_block_ids": ["<old inline database block ids and empty paragraphs to trash after 04 --cleanup>"],
+
+  "insert_after_block_id": "<block id right under the header (e.g. the divider); Highlights and sections are inserted after it>",
+  "highlights": {"enabled": true, "after_block_id": null},
+
+  "remove_text_contains": ["경험을 바탕으로 도구의 기능과 실제 작업의 목적을 함께 설명합니다"],
+  "forbidden_phrases": ["근거: 본 페이지", "측정 계획:", "(월 단위 기록)", "기준 기존 Notion 본문"],
+  "quote_drop_prefixes": ["근거 수준:", "기간: 기재 예정"],
+  "delete_section_headings": ["근거", "기록 메모", "측정"],
+
+  "number_checks": {
+    "https://raw.githubusercontent.com/<owner>/<repo>/main/README.md": ["19", "0.11", "+9.1", "43.6"]
+  },
+
+  "sections": [
+    {"key": "about", "heading": {"text": "About Me", "level": "heading_2", "color": null}, "tabs": [
+      {"name": "Tools", "type": "gallery", "filter": {"type": "Tool"}, "cover": false, "cover_size": "small", "card_layout": "compact", "show_result": false},
+      {"name": "Ai Tools", "type": "gallery", "filter": {"type": "Tool", "titles": ["Claude", "Codex", "Gemini"]}, "cover": false, "cover_size": "small", "card_layout": "compact", "show_result": false},
+      {"name": "경력 ㅣ Experience", "type": "gallery", "filter": {"section": "About Me", "type": "Career"}, "cover": false, "cover_size": "large"},
+      {"name": "학력 ㅣ Education", "type": "gallery", "filter": {"section": "About Me", "type": "Education"}, "cover": false, "cover_size": "large"}
+    ]},
+    {"key": "timeline", "heading": {"text": "TimeLine", "level": "heading_2", "color": null}, "tabs": [
+      {"name": "활동 차트", "type": "chart", "chart_type": "column", "x": "section", "stack_by": "type"},
+      {"name": "타임라인 보기", "type": "timeline", "zoom": "year"}
+    ]},
+    {"key": "work", "heading": {"text": "Work", "level": "heading_1", "color": "blue_background"}, "tabs": [
+      {"name": "스마트시티 조성사업(호서대 산학협력단)", "type": "gallery", "filter": {"section": "스마트시티 조성사업(호서대 산학협력단)"}},
+      {"name": "통계분석의뢰", "type": "gallery", "filter": {"section": "통계분석의뢰"}},
+      {"name": "내부과제(대학원)", "type": "gallery", "filter": {"section": "내부과제(대학원)"}}
+    ]},
+    {"key": "activities", "heading": {"text": "Competition / Experience", "level": "heading_1", "color": "blue_background"}, "tabs": [
+      {"name": "수상경력", "type": "gallery", "filter": {"section": "수상경력"}},
+      {"name": "공모전/학회 활동", "type": "gallery", "filter": {"section": "공모전/학회 활동"}},
+      {"name": "외부/내부 강의", "type": "gallery", "filter": {"section": "외부/내부 강의"}}
+    ]},
+    {"key": "cert", "heading": {"text": "Certification", "level": "heading_1", "color": "blue_background"}, "tabs": [
+      {"name": "수료증", "type": "gallery", "filter": {"section": "수료증"}},
+      {"name": "자격증", "type": "gallery", "filter": {"section": "자격증"}}
+    ]},
+    {"key": "project", "heading": {"text": "Project", "level": "heading_1", "color": "blue_background"}, "tabs": [
+      {"name": "AI Project", "type": "gallery", "filter": {"section": "AI Project"}},
+      {"name": "웹사이트", "type": "gallery", "filter": {"section": "웹사이트"}}
+    ]},
+    {"key": "paper", "heading": {"text": "Paper", "level": "heading_1", "color": "blue_background"}, "tabs": [
+      {"name": "Paper", "type": "gallery", "filter": {"section": "Paper"}, "card_layout": "list"}
+    ]},
+    {"key": "researcher", "heading": {"text": "Researcher", "level": "heading_1", "color": "blue_background"}, "tabs": [
+      {"name": "Researcher", "type": "gallery", "filter": {"section": "Researcher"}}
+    ]}
+  ]
+}
