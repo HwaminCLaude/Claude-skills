@@ -2,12 +2,12 @@
 
 [Claude Code](https://docs.anthropic.com/claude-code) 에서 쓰는 **재사용 스킬(skill)** 저장소입니다.
 강의자료(PDF/PPTX)·보고서 PDF·코드 노트북(.ipynb)·소스 코드베이스·강의 영상+자막·연구 논문을
-**공부할 수 있는 형태**로 자동 변환하거나, 실제 GPU에서 돌려 **따라 하는 실습 교재**로 만들고, 자료 근거로 **Notion 포트폴리오**를 구축하는 열 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
+**공부할 수 있는 형태**로 자동 변환하거나, 실제 GPU에서 돌려 **따라 하는 실습 교재**로 만들고, 자료 근거로 **Notion 포트폴리오**를 구축하고, 모델 구조를 **위에서 아래로 따라가는 3D HTML 페이지**로 펼치는 열한 스킬을 폴더 단위로 담고 있어, 다른 컴퓨터에서도 그대로 내려받아 쓸 수 있습니다.
 
 출력 대상은 네 갈래입니다.
 
 - **Notion 페이지로** — 일곱 스킬 (`*-notion`). Notion 통합 토큰·rclone 등이 필요합니다.
-- **로컬 HTML 파일로** — `notebook-explainer` 하나. **외부 서비스·API 키가 필요 없습니다.**
+- **로컬 HTML 파일로** — `notebook-explainer`, `model-flow-html` 두 스킬. **외부 서비스·API 키가 필요 없습니다.**
 - **영상(mp4)과 대본으로** — `paper-to-manim-video` 하나. Manim으로 렌더하며 **Notion을 쓰지 않습니다.**
 - **실습 교재 폴더(README)로** — `runpod-lesson-builder` 하나. RunPod GPU Pod에서 **실제로 실행·촬영한 결과**로 비개발자용 따라 하기 README를 만듭니다. Notion 대신 **RunPod 계정**이 필요합니다.
 
@@ -22,6 +22,7 @@
 | [`video-transcript-notion/`](./video-transcript-notion) | **video-transcript-notion** | 강의 영상 폴더 + 자막 → **차시마다 "영상 1개 + 그 밑에 타임스탬프 대본"** 노션 페이지 (드라이브 대량 업로드·정체 워치독 포함) |
 | [`curriculum-notion/`](./curriculum-notion) | **curriculum-notion** | 강의자료 묶음 → **기초 0인 사람이 from scratch로 따라가는 학습 커리큘럼**(주차 페이지 + 유닛 중첩 DB + **자동 채점되는 Colab 노트북**) |
 | [`notebook-explainer/`](./notebook-explainer) | **notebook-explainer** | 노트북·스크립트 → **단일 HTML 인터랙티브 해설**. 코드 줄마다 클릭 설명 + **텐서 shape 변화·모델 구조 위젯**(층 클릭 ↔ 코드 줄 하이라이트). 모든 수치는 노트북 출력에서 읽은 실제 값. **Notion·API 키 불필요** |
+| [`model-flow-html/`](./model-flow-html) | **model-flow-html** | 모델 config·논문 → **bbycroft.net/llm처럼 모델 전체 구조를 위에서 아래로 펼친 단일 HTML 3D 페이지**. 층 N개를 줄이지 않고 다 그리고, 얼린 가중치는 실제 비율의 파란 행렬(모눈 한 칸 = 값 개수), LoRA는 각 선형층 오른쪽의 B·A 행렬, 레일에는 Transformer 논문식 구조도. 모든 개수는 config 하나에서 계산해 공개 합계와 대조. **Notion·API 키 불필요** |
 | [`paper-to-manim-video/`](./paper-to-manim-video) | **paper-to-manim-video** | 논문 PDF·코드 → **3Blue1Brown 계열 한국어 교육 영상**. 나레이션 대본과 Manim 씬 코드를 `shots.json` 하나에서 함께 만들어 **낭독 시간과 영상 길이를 자동으로 일치**시키고, 1080p60 mp4 + `script.md` + `.srt` 까지 뽑습니다. **Notion 불필요** |
 | [`portfolio-notion/`](./portfolio-notion) | **portfolio-notion** | GitHub·Drive·기존 Notion·링크드인 자료 → **마스터 DB 1개 + 갤러리 탭·활동 차트·타임라인 연결 뷰**의 Notion 포트폴리오. 상단에 링크드인 소개 구조의 Highlights(숫자 중심 6줄 + 3단 컬럼 이력), 항목 페이지마다 요약 quote와 결과 표·비용·산출물 절. **수치는 README·원고 등 산출물에서 확인된 것만**, 이모지·작성 과정 문구 없음 |
 | [`runpod-lesson-builder/`](./runpod-lesson-builder) | **runpod-lesson-builder** | 주제 → **RunPod Pod에서 실제로 실행한 결과로 만든 레슨별 독립형 실습 README**(STEP마다 실화면·모자이크, 🎙️ 해설 대본, 로그·기대 출력, 품질 검사). 시작할 때 범위·산출물·Pod·비용을 **먼저 대화형으로 묻고**, 여러 Pod로 병렬 제작한 뒤 내용 검토·REPORT까지 하고 **쓴 Pod를 Stop**합니다. **Notion 불필요** |
@@ -56,6 +57,11 @@ Claude-skills/
 │   ├── README.md
 │   ├── scripts/                  ← 01_scan·02_upload_videos·03_build_pages·04_sync_videos·06_verify·dashboard
 │   └── references/               ← CONFIG.md · GOTCHAS.md
+├── curriculum-notion/
+│   ├── SKILL.md
+│   ├── README.md
+│   ├── scripts/                  ← curriculum·publish_skeleton·build_unit_notebook·publish_all·run_weeks·verify_*
+│   └── references/               ← AUTHORING_CONTRACT · example_curriculum.json · example_unit_W04U05.py
 ├── portfolio-notion/
 │   ├── SKILL.md
 │   ├── README.md
@@ -67,6 +73,13 @@ Claude-skills/
 │   ├── README.md
 │   ├── scripts/                  ← extract_notebook.py(base64·ANSI 제거) · verify_page.js(브라우저 검증)
 │   └── references/               ← widget-recipes.md · architecture-recipes.md
+├── model-flow-html/              ← Notion을 쓰지 않는 스킬 (단일 HTML 3D 페이지 출력)
+│   ├── SKILL.md
+│   ├── README.md
+│   ├── scripts/                  ← params(config→개수·공개 합계 대조)·count_tokens·
+│   │                                make_tests·shoot(헤드리스 스크린샷·모음 시트)
+│   ├── references/               ← template-api · visual-grammar · verification · publishing
+│   └── assets/template.html      ← 엔진 + 기본 설정(Llama-3.2-1B-Instruct + LoRA)
 ├── paper-to-manim-video/         ← Notion을 쓰지 않는 스킬 (mp4 영상 + 대본 출력)
 │   ├── SKILL.md
 │   ├── README.md
@@ -106,7 +119,9 @@ Copy-Item -Recurse -Force .\code-guidebook-notion  $dst\
 Copy-Item -Recurse -Force .\code-callgraph-notion  $dst\
 Copy-Item -Recurse -Force .\video-transcript-notion $dst\
 Copy-Item -Recurse -Force .\curriculum-notion       $dst\
+Copy-Item -Recurse -Force .\portfolio-notion        $dst\
 Copy-Item -Recurse -Force .\notebook-explainer      $dst\
+Copy-Item -Recurse -Force .\model-flow-html         $dst\
 Copy-Item -Recurse -Force .\paper-to-manim-video    $dst\
 Copy-Item -Recurse -Force .\runpod-lesson-builder   $dst\
 ```
@@ -115,14 +130,14 @@ Copy-Item -Recurse -Force .\runpod-lesson-builder   $dst\
 ```bash
 mkdir -p ~/.claude/skills
 cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-notion \
-      video-transcript-notion curriculum-notion notebook-explainer paper-to-manim-video \
-      runpod-lesson-builder \
+      video-transcript-notion curriculum-notion portfolio-notion notebook-explainer model-flow-html \
+      paper-to-manim-video runpod-lesson-builder \
       ~/.claude/skills/
 ```
 
 > oh-my-claudecode(OMC)를 쓴다면 `/oh-my-claudecode:skill add <경로>` 로 등록할 수도 있습니다.
 
-설치 후 Claude Code 세션에서 "이 폴더 PDF들 노션에 올려줘", "노트북 가이드북 만들어줘", "강의 영상이랑 대본 노션에 정리해줘", "RunPod 실습 교재 만들어줘" 처럼 말하면 해당 스킬이 자동으로 호출됩니다.
+설치 후 Claude Code 세션에서 "이 폴더 PDF들 노션에 올려줘", "노트북 가이드북 만들어줘", "강의 영상이랑 대본 노션에 정리해줘", "RunPod 실습 교재 만들어줘", "bbycroft처럼 내 모델 구조 HTML 만들어줘" 처럼 말하면 해당 스킬이 자동으로 호출됩니다.
 
 ## 🔧 사전 준비 (공통)
 
@@ -155,6 +170,10 @@ cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-not
 > 여러 레슨을 병렬로 만들려면 Claude Code의 **Workflow** 도구를 씁니다(사용자가 요청할 때만, 없으면 차례로).
 > 시작 인터뷰가 이 항목들을 먼저 조사하고, 사람이 직접 해야 하는 것(로그인·SSH 키·Deploy 승인)만 물어봅니다. Pod 비용은 사용자 계정에 청구됩니다.
 
+> **`model-flow-html` 도 위 준비물이 필요 없습니다** — Notion·rclone·PDF 라이브러리 대신 **Node.js 18+** 와 **Chrome(또는 Edge)** 만 있으면 됩니다(헤드리스 스크린샷 검증).
+> 토큰 수 측정에 **Python + `transformers`** 가 필요하고, 모음 시트에 **ffmpeg** 를 선택으로 씁니다.
+> Claude Code의 **Artifact** 도구가 있으면 비공개 링크로 게시하고, 없으면 독립 실행 HTML 파일만 만듭니다.
+
 > **`notebook-explainer` 는 위 준비물이 하나도 필요 없습니다** — Notion 토큰도, rclone도, PDF 라이브러리도 쓰지 않습니다.
 > 결과물이 로컬 HTML 파일 하나이기 때문입니다. **Python 표준 라이브러리만으로 추출이 돌아가고**,
 > 생성된 페이지를 실제 브라우저로 검증하려면 Node + playwright만 한 번 깔면 됩니다
@@ -181,6 +200,10 @@ cp -r pdf-to-notion book-outline-notion code-guidebook-notion code-callgraph-not
 > **환경 검증 → 논문/코드 파싱 → 시리즈 편성(CP1) → 대본+shots.json(CP2) → 씬 코드 →
 > 스모크 렌더 → 본번 렌더 → 길이 정합 검증(CP3)** 8단계이고, Drive·Notion 단계가 없습니다.
 > 체크포인트 세 곳에서 사람의 승인을 받습니다.
+
+> `model-flow-html` 도 이 흐름을 따르지 않습니다 —
+> **수치 확정(config → 개수, 공개 합계 대조, 토큰 실측) → 템플릿 복사·설정 → 단계 글·논문 고유 구간 →
+> 헤드리스 스크린샷 검증 → Artifact 게시 + 독립 실행 사본** 순서이고, Drive·Notion 단계가 없습니다.
 
 > `runpod-lesson-builder` 도 이 흐름을 따르지 않습니다 —
 > **시작 인터뷰 → 사전 점검·승인 → Pod 환경 → 파일럿 레슨(실행·실화면·README·품질 검사) → README만 보고 재현 검증 →

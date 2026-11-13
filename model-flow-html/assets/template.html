@@ -1,0 +1,1336 @@
+<title>모델 구조 흐름도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@600;700&display=swap">
+<style>
+/* 배치: 왼쪽 레일(논문식 구조도 + 단계 글) + 오른쪽 입체 판(모델 전체가 위에서 아래로 놓인다). 좁은 화면에서는 판이 위, 레일이 아래 */
+:root {
+  --bg: #f1f3f6; --panel: #ffffff; --ink: #141a22; --ink2: #586270; --line: #d3d8e0;
+  --accent: #1c7a92; --accent-ink: #ffffff; --warn: #b8402f;
+  --c-bg: #e7ebf0; --c-plate: #dde1e8; --c-plateOn: #d3e6ec; --c-plateDone: #d6dee4;
+  --c-cell: #bcc4cf; --c-dot: #3b4553; --c-faint: #cdd3db; --c-w: #4f74b3; --c-act: #7b63c9;
+  --c-base: #8791a0; --c-k1: #d5722a; --c-k2: #2b8cab; --c-k3: #56974a; --c-bad: #cc4740; --c-onc: #ffffff;
+  --c-ink: #141a22; --c-ink2: #586270; --c-line: #aab2be; --c-accent: #1c7a92;
+  --lora: var(--c-k3);
+  --f-display: "Noto Serif KR", "Batang", "AppleMyungjo", serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0e12; --panel: #11151b; --ink: #e8ecf1; --ink2: #98a2b0; --line: #262d37;
+    --accent: #5bbad2; --accent-ink: #05212a; --warn: #f0776b;
+    --c-bg: #07090c; --c-plate: #12161c; --c-plateOn: #16303a; --c-plateDone: #141f25;
+    --c-cell: #39414d; --c-dot: #cdd4dd; --c-faint: #232a33; --c-w: #5d8bd6; --c-act: #a48fea;
+    --c-base: #8791a0; --c-k1: #e08a3c; --c-k2: #4aa8c4; --c-k3: #74b361; --c-bad: #e2625b; --c-onc: #0b1014;
+    --c-ink: #e8ecf1; --c-ink2: #98a2b0; --c-line: #3a4350; --c-accent: #5bbad2;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0e12; --panel: #11151b; --ink: #e8ecf1; --ink2: #98a2b0; --line: #262d37;
+  --accent: #5bbad2; --accent-ink: #05212a; --warn: #f0776b;
+  --c-bg: #07090c; --c-plate: #12161c; --c-plateOn: #16303a; --c-plateDone: #141f25;
+  --c-cell: #39414d; --c-dot: #cdd4dd; --c-faint: #232a33; --c-w: #5d8bd6; --c-act: #a48fea;
+  --c-base: #8791a0; --c-k1: #e08a3c; --c-k2: #4aa8c4; --c-k3: #74b361; --c-bad: #e2625b; --c-onc: #0b1014;
+  --c-ink: #e8ecf1; --c-ink2: #98a2b0; --c-line: #3a4350; --c-accent: #5bbad2;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.7; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+.app { height: 100%; display: grid; grid-template-columns: minmax(300px, 410px) minmax(0, 1fr); }
+
+.rail {
+  display: flex; flex-direction: column; gap: 14px; min-width: 0; min-height: 0; overflow-y: auto;
+  background: var(--panel); border-right: 1px solid var(--line);
+  padding-top: 20px; padding-bottom: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  word-break: keep-all; overflow-wrap: anywhere;
+}
+.rail > * { margin: 0 6px; }
+.eyebrow { margin: 0; font-size: 12px; letter-spacing: 0.08em; color: var(--accent); font-weight: 600; }
+h1 { margin: 0; font-family: var(--f-display); font-size: 22px; line-height: 1.3; font-weight: 700; text-wrap: balance; }
+
+/* 논문식 구조도: 위에서 아래로 쌓인 블록. 파랑 = 원래 가중치, 색 꼬리표 = LoRA, 보라 옆길 = 잔차 연결. 모두 스크립트가 구성에서 만든다 */
+.archbox > summary {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; padding: 0 0 6px; cursor: pointer; list-style: none;
+  font-size: 12.5px; font-weight: 600; color: var(--ink);
+}
+.archbox > summary::-webkit-details-marker { display: none; }
+.archbox > summary::before { content: "▾"; color: var(--ink2); }
+.archbox:not([open]) > summary::before { content: "▸"; }
+.archbox > summary em { font-style: normal; }
+.archbox > summary span { font-weight: 400; color: var(--ink2); }
+.arch { display: flex; flex-direction: column; gap: 4px; font-size: 12px; line-height: 1.25; }
+.arch button { font: inherit; color: inherit; cursor: pointer; text-align: left; }
+.arch .blk {
+  position: relative; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; width: 100%;
+  padding: 2px 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.arch .blk::before { content: ""; position: absolute; left: 50%; top: -5px; height: 4px; border-left: 1px solid var(--ink2); }
+.arch > .blk:first-child::before { display: none; }
+.arch .blk span { font-family: var(--f-mono); font-size: 11px; opacity: 0.85; white-space: nowrap; }
+.arch .frz { background: var(--c-w); border-color: var(--c-w); color: var(--c-onc); }
+.arch .add { border-style: dashed; border-color: var(--c-act); }
+.arch .stack { display: flex; flex-direction: column; gap: 4px; padding: 5px 6px 4px; border: 1px solid var(--ink2); border-radius: 6px; }
+.arch .tag { align-self: flex-start; padding: 0 7px; border-radius: 4px; border: 1px solid var(--ink2); background: var(--panel); font-weight: 600; }
+/* 잔차 연결: 정규화와 부분층을 건너뛰어 더하기로 들어가는 옆길 (입체 그림에서는 가운데 줄기) */
+.arch .res { position: relative; isolation: isolate; display: flex; flex-direction: column; gap: 4px; padding: 0 16px; }
+.arch .res::before {
+  content: ""; position: absolute; z-index: -1; left: 4px; top: -3px; bottom: 9px; width: calc(50% - 4px);
+  border: 2px solid var(--c-act); border-right: 0; border-radius: 6px 0 0 6px;
+}
+.arch .res::after { content: ""; position: absolute; left: 10px; bottom: 5px; border: 5px solid transparent; border-left-color: var(--c-act); }
+.arch .pair { display: flex; gap: 4px; align-items: stretch; }
+.arch .pair .blk { flex: 1; min-width: 0; }
+.arch .lora { flex: none; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--lora); background: var(--lora); color: var(--c-onc); font-weight: 600; white-space: nowrap; }
+.arch.nolora .lora { opacity: 0.3; text-decoration: line-through; }
+.arch .sum, .arch .total { margin: 0; font-family: var(--f-mono); font-size: 11px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+.arch .total b { color: var(--ink); font-weight: 600; }
+.arch [aria-current="step"] { outline: 2px solid var(--ink); outline-offset: 1px; }
+.arch button:hover { filter: brightness(1.08); }
+
+.step { flex: 1 0 auto; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.where { margin: 0; font-family: var(--f-mono); font-size: 12px; color: var(--ink2); }
+h2 { margin: 0; font-family: var(--f-display); font-size: 20px; line-height: 1.35; font-weight: 700; text-wrap: balance; }
+.body p { margin: 0 0 8px; max-width: 34em; font-size: 14px; line-height: 1.65; }
+.body b { font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+.body code { font-family: var(--f-mono); font-size: 0.9em; padding: 1px 4px; border-radius: 4px; background: var(--bg); }
+.src { margin: 0; font-size: 12px; color: var(--ink2); }
+/* 좁은 화면에서는 판 위의 작은 글자가 숨으므로(7.5px 미만) 같은 예시 문장을 레일에 한 번 더 보인다 */
+.narrow { display: none; }
+.narrow .msg { margin: 0 0 6px; padding: 6px 9px; border-radius: 6px; background: var(--bg); font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
+.narrow .msg i { margin-right: 6px; font-style: normal; font-family: var(--f-mono); font-size: 11.5px; color: var(--ink2); }
+
+.pager {
+  position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; gap: 10px;
+  padding: 10px 0 max(14px, env(safe-area-inset-bottom, 0px)); background: var(--panel); border-top: 1px solid var(--line);
+}
+.pager .count { flex: 1; text-align: center; font-family: var(--f-mono); font-size: 12px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+.pager button, .reset {
+  padding: 7px 16px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  font: inherit; font-size: 14px; cursor: pointer;
+}
+.pager button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.pager button:disabled { opacity: 0.4; cursor: default; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.stage { position: relative; min-width: 0; min-height: 0; background: var(--c-bg); overflow: hidden; }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+#cv.drag { cursor: grabbing; }
+#cv.hot { cursor: pointer; }
+.reset { position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); font-size: 13px; padding: 6px 12px; }
+.pick {
+  position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: 12px; max-width: calc(100% - 32px);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--line); font-size: 12.5px;
+}
+.pick .key { display: inline-flex; align-items: center; gap: 5px; color: var(--ink2); margin-right: 4px; }
+.pick i { width: 10px; height: 10px; border-radius: 2px; display: block; }
+.pick small { font-size: 11px; color: var(--ink2); }
+.pick .lab { color: var(--ink2); margin: 0 2px 0 6px; }
+.pick button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--line);
+  background: transparent; color: var(--ink); font: inherit; cursor: pointer;
+}
+.pick button[aria-pressed="true"] { border-color: var(--ink); font-weight: 600; background: var(--bg); }
+.hint {
+  position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: 14px; margin: 0; font-size: 12px; color: var(--ink2);
+  background: color-mix(in srgb, var(--c-bg) 82%, transparent); padding: 3px 8px; border-radius: 6px;
+}
+.tip {
+  position: absolute; z-index: 3; max-width: 310px; padding: 6px 10px; border-radius: 6px; pointer-events: none;
+  background: var(--ink); color: var(--panel); font-size: 12.5px; line-height: 1.5; font-variant-numeric: tabular-nums;
+}
+.err { position: absolute; z-index: 4; left: 16px; top: 16px; right: 16px; padding: 10px 12px; border-radius: 6px; background: var(--panel); border: 1px solid var(--warn); color: var(--warn); font-size: 13px; }
+
+@media (max-width: 1280px) { .hint { display: none; } }
+@media (max-width: 1100px) { .pick small { display: none; } }
+@media (max-width: 820px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(260px, 48%) minmax(0, 1fr); }
+  .stage { order: -1; }
+  .rail { border-right: 0; border-top: 1px solid var(--line); padding-top: 14px; gap: 10px; }
+  h1 { font-size: 20px; }
+  .pick { font-size: 11.5px; gap: 4px; padding: 5px 6px; }
+  .pick button { padding: 3px 6px; gap: 4px; }
+  .pick .key { margin-right: 2px; }
+  .pick .lab { margin: 0 0 0 2px; }
+  .narrow { display: block; }
+}
+</style>
+
+<div class="app">
+  <aside class="rail" aria-label="구조도와 단계 해설">
+    <header class="brand">
+      <p class="eyebrow" id="eyebrow">모델 구조 시각화</p>
+      <h1 id="h1"></h1>
+    </header>
+    <details class="archbox" id="archbox" open>
+      <summary><em id="archname"></em> 구조도 <span>블록을 누르면 그 자리로</span></summary>
+      <nav class="arch" id="arch" aria-label="모델 구조도"></nav>
+    </details>
+    <section class="step" aria-live="polite">
+      <p class="where" id="where"></p>
+      <h2 id="stitle"></h2>
+      <div class="body" id="sbody"></div>
+      <p class="src" id="ssrc"></p>
+    </section>
+    <footer class="pager">
+      <button type="button" id="prev">이전</button>
+      <span class="count" id="count"></span>
+      <button type="button" id="next" class="primary">다음</button>
+    </footer>
+  </aside>
+  <main class="stage" id="stage">
+    <canvas id="cv" role="img" aria-label="위에서 아래로 놓인 모델 전체 구조의 입체 그림"></canvas>
+    <button type="button" class="reset" id="reset">이 단계 보기</button>
+    <div class="pick" id="pick" role="group" aria-label="색 풀이와 어댑터 고르기"></div>
+    <p class="hint">끌기 회전 · 휠 확대 · Shift+끌기 이동 · ← → 단계</p>
+    <div class="tip" id="tip" hidden></div>
+    <div class="err" id="err" hidden></div>
+  </main>
+</div>
+
+<script>
+/* <mf:config> ── EDIT HERE ── 그릴 모델, 어댑터, 예시 입력은 이 블록에서만 고친다. 페이지의 모든 숫자는 여기서 계산된다 */
+const MODEL = {
+  name: 'Llama-3.2-1B-Instruct',
+  hidden: 2048, layers: 16, heads: 32, kvHeads: 8, headDim: 64, ffn: 8192, vocab: 128256,
+  norm: 'rms',          // 'rms'(가중치만) | 'ln'(가중치 + 편향)
+  mlp: 'gated',         // 'gated'(gate, up → act(gate)×up → down) | 'plain'(fc → act → proj)
+  act: 'SiLU',          // 페이지에 쓰는 활성화 함수 이름
+  pos: 'rope',          // 'rope'(어텐션 안에서 회전, 표 없음) | 'learned'(maxPos × hidden 표를 임베딩 뒤에 더함) | 'none'
+  maxPos: 0,
+  bias: { q: false, k: false, v: false, o: false, mlp: false },
+  tied: true,           // LM head가 임베딩 표를 다시 씀(추가 값 없음, '공유'로 그림)
+  names: { q: 'q_proj', k: 'k_proj', v: 'v_proj', o: 'o_proj', gate: 'gate_proj', up: 'up_proj', down: 'down_proj', fc: 'fc', proj: 'proj',
+           norm1: 'input_layernorm', norm2: 'post_attention_layernorm', normF: 'norm', emb: 'embed_tokens', pos: 'wpe', head: 'lm_head' },
+  frozen: '4비트(NF4)',  // 미세조정할 때 원래 가중치를 두는 방식. 미세조정 페이지가 아니면 ''
+  grid: 256,            // 원래 가중치 판의 모눈 한 칸 = grid × grid 값
+  expect: { total: 1235814400, trainable: 11272192 },   // 공개된 합계. 검사하지 않으려면 null. 선택: src(출처 줄에 쓸 이름, 기본 '공개된 합계')
+};
+const LORA = { r: 16, alpha: 32, targets: ['q', 'k', 'v', 'o', 'gate', 'up', 'down'] };   // null = 어댑터 없음
+const CONDS = [                                   // 범례 버튼. lora:false = 어댑터 없는 원래 모델. color는 base | k1 | k2 | k3
+  { label: 'LoRA 없음(기준 모델)', color: 'base', lora: false },
+  { label: 'LoRA 붙임', color: 'k3', lora: true },
+];
+const EXAMPLE = {   // 모델에 넣어 볼 입력 하나. 토큰 수는 실제 토크나이저와 채팅 템플릿으로 잰 값
+  messages: [
+    { role: 'system', content: '질문에 한두 문장으로 답한다.' },
+    { role: 'user', content: 'LoRA가 무엇인지 알려 줘.' },
+    { role: 'assistant', content: 'LoRA는 얼린 가중치 옆에 작은 행렬 두 개를 붙여 그 둘만 학습하는 방법입니다.' },
+  ],
+  // transformers 4.57 apply_chat_template(date_string='26 Jul 2024')와 Llama-3.2-1B-Instruct 토크나이저로 잼
+  tokens: { system: 11, user: 9, template: 35, prompt: 55, target: 28, total: 83 },
+  // target = total − prompt (assistant 본문 27 + 턴 끝 표시 1)
+  src: '새로 쓴 합성 예시',   // 선택: 입력·토큰 단계의 출처 줄 앞에 붙는다(예: '논문 표 <번호>의 예시')
+  // plain: true,            // 선택: 채팅 틀이 없는 모델(count_tokens.py --plain 으로 잰 값). 입력 단계 글이 '채팅 템플릿'을 말하지 않는다
+};
+const TRAIN = { show: true };      // 손실은 답 토큰에서만(프롬프트 자리는 −100으로 가림). LORA가 있을 때만 그린다. 손실을 어디에 거는지 모르면 false. 선택: src(출처 줄)
+const RESULTS = null;              // 선택: 막대그래프 { title, unit: '%', metrics: [...], values: [[조건별 값] 지표마다], ci: [[[lo, hi] 조건마다] 지표마다] | null, src }
+/* </mf:config> */
+
+/* <mf:count> — every count on the page comes from here; scripts/params.mjs reads this block */
+function countParams(M, LR) {
+  const h = M.hidden, qd = M.heads * M.headDim, kd = M.kvHeads * M.headDim, f = M.ffn;
+  const bias = M.bias || {};
+  const norm = M.norm === 'ln' ? 2 * h : h;
+  const lin = (din, dout, b) => din * dout + (b ? dout : 0);
+  const shapes = { q: [h, qd], k: [h, kd], v: [h, kd], o: [qd, h] };
+  if (M.mlp === 'gated') Object.assign(shapes, { gate: [h, f], up: [h, f], down: [f, h] });
+  else Object.assign(shapes, { fc: [h, f], proj: [f, h] });
+  const layer = { norm1: norm, norm2: norm };
+  for (const k in shapes) layer[k] = lin(shapes[k][0], shapes[k][1], 'qkvo'.includes(k) && k.length === 1 ? bias[k] : bias.mlp);
+  layer.total = Object.values(layer).reduce((a, b) => a + b, 0);
+  const emb = M.vocab * h, pos = M.pos === 'learned' ? M.maxPos * h : 0, head = M.tied ? 0 : M.vocab * h;
+  const out = { shapes, layer, emb, pos, head, normF: norm, layers: layer.total * M.layers };
+  out.total = emb + pos + out.layers + norm + head;
+  out.lora = null;
+  if (LR && LR.targets && LR.targets.length) {
+    const per = {};
+    for (const t of LR.targets) { if (!shapes[t]) throw new Error('LoRA target not in this model: ' + t); per[t] = LR.r * (shapes[t][0] + shapes[t][1]); }
+    const perLayer = Object.values(per).reduce((a, b) => a + b, 0);
+    out.lora = { r: LR.r, alpha: LR.alpha, perModule: per, perLayer, sites: LR.targets.length * M.layers, total: perLayer * M.layers };
+    out.lora.ratio = out.lora.total / out.total;
+  }
+  return out;
+}
+/* </mf:count> */
+
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const cv = $('#cv'), ctx = cv.getContext('2d'), stage = $('#stage'), tip = $('#tip'), errBox = $('#err');
+const errs = [];
+function warn(m) { errs.push(m); errBox.textContent = errs.join(' / '); errBox.hidden = false; }
+window.addEventListener('error', (e) => warn('그림을 그리지 못했습니다: ' + e.message));
+const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const SANS = '"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif';
+const MONO = '"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace';
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = (n) => n.toLocaleString('en-US');
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+/* 한국어 조사: 끝 글자에 받침이 있으면 a, 없으면 b. 숫자와 로마자는 읽는 소리로 어림한다 */
+function pp(w, a, b) {
+  const s = String(w), c = s.charCodeAt(s.length - 1);
+  let f = 0;
+  if (c >= 0xAC00 && c <= 0xD7A3) f = (c - 0xAC00) % 28;
+  else if (c >= 48 && c <= 57) f = [21, 8, 0, 16, 0, 0, 1, 8, 8, 0][c - 48];   // 영 일 이 삼 사 오 육 칠 팔 구
+  else if (/[lmn]$/i.test(s)) f = 4;
+  if (a === '으로') return f && f !== 8 ? '으로' : '로';
+  return f ? a : b;
+}
+const cj = (name, a, b) => '<code>' + esc(name) + '</code>' + (a ? pp(name, a, b) : '');
+
+/* ---------------------------------------------------------------- 숫자: 모두 구성에서 센다 */
+const COUNTS = countParams(MODEL, LORA);
+const FT = !!COUNTS.lora;                        // 미세조정(LoRA) 페이지인가
+const LT = new Set(FT ? LORA.targets : []);      // LoRA를 붙인 선형층
+const NL = MODEL.layers, HID = MODEL.hidden, V = MODEL.vocab, G = MODEL.grid || 256;
+const GATED = MODEL.mlp === 'gated', ROPE = MODEL.pos === 'rope', LEARNED = MODEL.pos === 'learned';
+const ATTK = ['q', 'k', 'v', 'o'], MLPK = GATED ? ['gate', 'up', 'down'] : ['fc', 'proj'];
+const NN = Object.assign({ q: 'q', k: 'k', v: 'v', o: 'o', gate: 'gate', up: 'up', down: 'down', fc: 'fc', proj: 'proj',
+  norm1: 'norm1', norm2: 'norm2', normF: 'norm', emb: 'embed', pos: 'pos', head: 'lm_head' }, MODEL.names || {});
+const TK = EXAMPLE.tokens, NT = TK.total;
+const NORM = MODEL.norm === 'ln' ? 'LayerNorm' : 'RMSNorm';
+const NORMTXT = '가중치 ' + fmt(HID) + '개' + (MODEL.norm === 'ln' ? ' + 편향 ' + fmt(HID) + '개' : '');
+const WORD = FT ? '얼린 값' : '가중치';
+const FROZEN = FT ? ['얼려 둠', MODEL.frozen, '학습하지 않음'].filter(Boolean).join(' · ') : '사전 학습된 가중치';
+const GC = fmt(G * G);
+const TC = FT ? 'lora' : 'accent';               // 답(assistant)과 다음 토큰의 색
+const TRAIN_ON = FT && !!(TRAIN && TRAIN.show);
+let EXP_OK = null;
+if (MODEL.expect) {
+  const e = MODEL.expect, tr = FT ? COUNTS.lora.total : 0, bad = [];
+  if (e.total != null && e.total !== COUNTS.total) bad.push('전체 ' + fmt(COUNTS.total) + '개, 공개 값 ' + fmt(e.total) + '개');
+  if (e.trainable != null && e.trainable !== tr) bad.push('학습 ' + fmt(tr) + '개, 공개 값 ' + fmt(e.trainable) + '개');
+  EXP_OK = !bad.length;
+  if (bad.length) warn('구성으로 센 값이 공개 값과 다릅니다(' + bad.join(' · ') + '). MODEL과 LORA 설정을 확인하세요.');
+}
+if ((TK.system || 0) + (TK.user || 0) + (TK.template || 0) !== TK.prompt || TK.prompt + TK.target !== NT) {
+  warn('EXAMPLE.tokens의 합이 맞지 않습니다(system + user + template = prompt, prompt + target = total이어야 합니다).');
+}
+if (!CONDS.length) CONDS.push({ label: '기준 모델', color: 'base', lora: false });
+CONDS.forEach((c) => { if (['base', 'k1', 'k2', 'k3'].indexOf(c.color) < 0) c.color = c.lora ? 'k3' : 'base'; });
+
+/* ---------------------------------------------------------------- 색 */
+const KEYS = ['bg', 'plate', 'plateOn', 'plateDone', 'cell', 'dot', 'faint', 'w', 'act', 'base', 'k1', 'k2', 'k3', 'bad', 'onc', 'ink', 'ink2', 'line', 'accent', 'lora'];
+const KI = {}; KEYS.forEach((k, i) => { KI[k] = i; });
+const PAL = {};
+let cond = CONDS.length - 1;   /* 마지막 조건으로 시작한다 */
+function readPal() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of KEYS) {
+    if (k === 'lora') continue;
+    const m = /#([0-9a-f]{6})/i.exec(cs.getPropertyValue('--c-' + k));
+    const n = m ? parseInt(m[1], 16) : 0x808080;
+    PAL[k] = [n >> 16 & 255, n >> 8 & 255, n & 255];
+  }
+  PAL.lora = PAL[CONDS[cond].color];
+}
+const cssC = new Map();
+function rgbK(r, g, b) {
+  const k = (r << 16) | (g << 8) | b;
+  let s = cssC.get(k);
+  if (!s) { if (cssC.size > 60000) cssC.clear(); s = 'rgb(' + r + ',' + g + ',' + b + ')'; cssC.set(k, s); }
+  return s;
+}
+const css = (c) => rgbK(c[0], c[1], c[2]);
+
+/* ---------------------------------------------------------------- 카메라와 투영 */
+const FOV = 32 * Math.PI / 180;
+const cam = { tx: 8, ty: 0, tz: 0, dist: 300, yaw: -0.3, pitch: 0.42 };
+const goal = Object.assign({}, cam);
+const CAMK = ['tx', 'ty', 'tz', 'dist', 'yaw', 'pitch'];
+let W = 800, H = 600, DPR = 1, F = 1000, CX = 400, CY = 300;
+const EYE = [0, 0, 0], FW = [0, 0, -1], RT = [1, 0, 0], UP = [0, 1, 0];
+function setupCam(c) {
+  c = c || cam;
+  const cp = Math.cos(c.pitch), sp = Math.sin(c.pitch), cy = Math.cos(c.yaw), sy = Math.sin(c.yaw);
+  EYE[0] = c.tx + c.dist * cp * sy; EYE[1] = c.ty + c.dist * sp; EYE[2] = c.tz + c.dist * cp * cy;
+  let fx = c.tx - EYE[0], fy = c.ty - EYE[1], fz = c.tz - EYE[2];
+  const fl = Math.hypot(fx, fy, fz); fx /= fl; fy /= fl; fz /= fl;
+  FW[0] = fx; FW[1] = fy; FW[2] = fz;
+  let rx = -fz, rz = fx; const rl = Math.hypot(rx, rz) || 1; rx /= rl; rz /= rl;
+  RT[0] = rx; RT[1] = 0; RT[2] = rz;
+  UP[0] = -rz * fy; UP[1] = rz * fx - rx * fz; UP[2] = rx * fy;
+  F = (H / 2) / Math.tan(FOV / 2); CX = W / 2; CY = H / 2;
+}
+const T4 = [0, 0, 0, 0];
+function proj(x, y, z, o) {
+  const vx = x - EYE[0], vy = y - EYE[1], vz = z - EYE[2];
+  const d = vx * FW[0] + vy * FW[1] + vz * FW[2];
+  if (d < 0.6) return false;
+  const s = F / d;
+  o[0] = CX + (vx * RT[0] + vz * RT[2]) * s;
+  o[1] = CY - (vx * UP[0] + vy * UP[1] + vz * UP[2]) * s;
+  o[2] = d; o[3] = s;
+  return true;
+}
+/* 화면 안(여유 포함)에 있으면 참. 깊이는 T4[2]에 남는다 */
+function inView(x, y, z, rad) {
+  if (!proj(x, y, z, T4)) return false;
+  const m = rad * T4[3] + 24;
+  return T4[0] > -m && T4[0] < W + m && T4[1] > -m && T4[1] < H + m;
+}
+
+/* ---------------------------------------------------------------- 크기와 층 배치 */
+const U = 4.4 / HID;            /* 값 1개의 길이. 입력이 hidden인 행렬은 늘 가로 4.4 */
+const LW = 0.34, GAP = 2.26;    /* LoRA 띠의 그림 두께(키워 그림), 선형층 사이 간격(오른쪽 끝에서 다음 왼쪽 끝까지) */
+const SH = COUNTS.shapes;       /* [d_in, d_out] */
+const dOf = (k) => SH[k][1] * U, wOf = (k) => SH[k][0] * U;
+/* 선형층 하나가 차지하는 오른쪽 끝: W0, 그리고 LoRA를 붙였으면 B와 A 띠까지 */
+const extentX = (x, k) => x + wOf(k) + (LT.has(k) ? 0.6 + LW + wOf(k) : 0);
+/* 층 안의 배치는 모든 층이 같다. z는 층 시작(zb)에서 잰 값 */
+const GEO = (() => {
+  const g = {};
+  let x = 6;
+  for (const k of ['q', 'k', 'v']) { g[k] = { x, z: 6 }; x = extentX(x, k) + GAP; }
+  g.attTop = 6 + Math.max(dOf('q'), dOf('k')) + 3.2;
+  g.attX = (g.q.x + wOf('q') / 2 + g.k.x + wOf('k') / 2) / 2;
+  g.o = { x: 6, z: g.attTop + 6.6 + 1.4 };
+  g.add1 = g.o.z + dOf('o') + 1.3;
+  g.n2 = g.add1 + 2.3;
+  g.guTop = g.n2 + 3.4;
+  const wide = GATED ? 'gate' : 'fc', back = GATED ? 'down' : 'proj';
+  if (GATED) { g.gate = { x: 6, z: g.guTop }; g.up = { x: extentX(6, 'gate') + GAP, z: g.guTop }; } else g.fc = { x: 6, z: g.guTop };
+  g.act = g.guTop + dOf(wide) + 2.6;
+  g[back] = { x: 6, z: g.act + 3.0 };
+  g.add2 = g[back].z + dOf(back) + 2.9;
+  g.PB = g.add2 + 2.7;
+  g.attR = Math.max(extentX(g.q.x, 'q'), extentX(g.k.x, 'k'), extentX(g.v.x, 'v'), extentX(6, 'o'));
+  g.mlpR = Math.max.apply(null, MLPK.map((k) => extentX(g[k].x, k)));
+  g.R = Math.max(g.attR, g.mlpR);
+  return g;
+})();
+const PB = GEO.PB;
+/* LoRA를 가까이서 볼 선형층: 어텐션 쪽 첫 대상, 없으면 MLP 쪽 첫 대상 */
+const CU = (() => {
+  if (!FT) return null;
+  const a = ATTK.find((k) => LT.has(k)); if (a) return { key: a, sec: 2 };
+  const m = MLPK.find((k) => LT.has(k)); return m ? { key: m, sec: 3 } : null;
+})();
+
+/* ---------------------------------------------------------------- 구간과 판 */
+const ST = [
+  { name: '입력', ovp: 1 }, { name: '임베딩', ovp: 0 }, { name: '층 1 · 어텐션', ovp: 0 }, { name: '층 1 · MLP', ovp: 0 },
+  { name: NL > 1 ? '층 2~' + NL : '층', ovp: 0 }, { name: '출력', ovp: 1 }, { name: '결과', ovp: 0 },
+];
+/* far = 멀리서 전체를 볼 때만 남기는 이름표. 네 개쯤 되게 간격을 고르고 마지막 층은 꼭 넣는다 */
+const FS = Math.max(1, Math.round(NL / 4));
+const farOf = (L) => (L === NL || (L % FS === 0 && NL - L >= FS / 2) ? '층 ' + L : null);
+const PL = [];
+const boxes = [], fields = [], lines = [], texts = [];
+let PXL = -27, PXR = 43;        /* 판의 가로 범위. 다 그린 뒤 내용에서 다시 잰다 */
+
+function gridPos(cols, pitch, cx, cz, y, n) {
+  const rows = Math.ceil(n / cols), w = (cols - 1) * pitch, d = (rows - 1) * pitch;
+  return (k) => [cx - w / 2 + (k % cols) * pitch, y, cz - d / 2 + Math.floor(k / cols) * pitch];
+}
+function addLine(st, pts, o) {
+  let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
+  for (const p of pts) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); z0 = Math.min(z0, p[2]); z1 = Math.max(z1, p[2]); }
+  lines.push(Object.assign({ st, pts, c: 'ink2', w: 1.5, a: 0, rest: 0.7, ov: 0.85, mx: (x0 + x1) / 2, mz: (z0 + z1) / 2, rad: Math.hypot(x1 - x0, z1 - z0) / 2 + 0.5 }, o || {}));
+}
+function B(st) {
+  const api = {
+    box(x, z, w, d, y0, h, c, o) {
+      boxes.push(Object.assign({ st, x0: x - w / 2, x1: x + w / 2, y0, y1: y0 + h, z0: z - d / 2, z1: z + d / 2, c, a: 0, rest: 0.9, ov: 0.97,
+        cx: x, cy: y0 + h / 2, cz: z, rad: Math.hypot(w, d, h) / 2 }, o || {}));
+    },
+    text(x, y, z, s, o) {
+      texts.push(Object.assign({ st, p: [x, y, z], s, size: 0.6, c: 'ink', a: 0, rest: 0, ov: 0 }, o || {}));
+    },
+    line(pts, o) { addLine(st, pts, o); },
+    dots(n, size, phases, o) {
+      const f = Object.assign({ st, n, size, a: 0, rest: 0.9, ov: 0.97 }, o || {});
+      const seenP = new Map(), seenC = new Map();
+      f.P = phases.map((p) => {
+        if (seenP.has(p.pos)) return seenP.get(p.pos);
+        const out = new Float32Array(n * 3);
+        for (let k = 0; k < n; k++) { const q = p.pos(k); out[3 * k] = q[0]; out[3 * k + 1] = q[1]; out[3 * k + 2] = q[2]; }
+        seenP.set(p.pos, out); return out;
+      });
+      f.C = phases.map((p) => {
+        if (seenC.has(p.col)) return seenC.get(p.col);
+        const out = new Uint8Array(n);
+        for (let k = 0; k < n; k++) out[k] = KI[p.col(k)];
+        seenC.set(p.col, out); return out;
+      });
+      f.cur = Float32Array.from(f.P[0]); f.rgb = new Float32Array(n * 3);
+      let sx = 0, sy = 0, sz = 0;
+      for (let k = 0; k < n; k++) { sx += f.cur[3 * k]; sy += f.cur[3 * k + 1]; sz += f.cur[3 * k + 2]; }
+      f.c = [sx / n, sy / n, sz / n]; f.rad = 0;
+      for (let k = 0; k < n; k++) f.rad = Math.max(f.rad, Math.hypot(f.cur[3 * k] - f.c[0], f.cur[3 * k + 2] - f.c[2]));
+      fields.push(f); return f;
+    },
+    /* 원래 가중치 W0와, target이면 그 오른쪽에 붙는 LoRA B, A. x,z = W0의 왼쪽 위. 가로 = 입력 차원, 세로 = 출력 차원 */
+    unit(x, z, din, dout, name, o) {
+      const base = Object.assign({}, o), tg = !!base.target && FT, bias = base.bias || 0;
+      delete base.target; delete base.bias;
+      const w = din * U, d = dout * U, r = FT ? LORA.r : 0, lp = fmt(r * (din + dout));
+      api.box(x + w / 2, z + d / 2, w, d, 0, 0.6, 'w', Object.assign({ grid: [din / G, dout / G], meta: name + ' · W₀ ' + fmt(dout) + ' × ' + fmt(din) + ' = ' + fmt(din * dout) + '개'
+        + (bias ? ' + 편향 ' + fmt(bias) + '개' : '') + ' · ' + FROZEN + ' · 모눈 한 칸 = ' + GC + '개' }, base));
+      const u = { x0: x, x1: x + w, cx: x + w / 2, z0: z, z1: z + d, cz: z + d / 2, xr: x + w, bx: x + w, ax: x + w };
+      if (tg) {
+        u.bx = x + w + 0.3 + LW / 2; u.ax = x + w + 0.6 + LW + w / 2; u.xr = x + w + 0.6 + LW + w;
+        api.box(u.bx, z + d / 2, LW, d, 0, 1.0, 'lora', Object.assign({ lora: true, meta: name + ' · LoRA B ' + fmt(dout) + ' × ' + r + ' (학습) · A와 합쳐 ' + lp + '개 · 두께는 키워 그림(랭크 ' + r + pp(r, '은', '는') + ' 모눈 한 칸보다 훨씬 얇다)' }, base));
+        api.box(u.ax, z + LW / 2, w, LW, 0, 1.0, 'lora', Object.assign({ lora: true, meta: name + ' · LoRA A ' + r + ' × ' + fmt(din) + ' (학습) · B와 합쳐 ' + lp + '개 · 두께는 키워 그림' }, base));
+      }
+      return u;
+    },
+  };
+  return api;
+}
+const trunk = (a, c) => addLine(-2, [[0, 0.3, a], [0, 0.3, c]], { always: true, c: 'act', w: 3 });
+/* 글자 폭 어림(한글 1, 로마자·숫자 0.55, 빈칸 0.3)으로 줄을 나눈다 */
+const chW = (ch) => (ch === ' ' ? 0.3 : ch.charCodeAt(0) > 0x2E80 ? 1 : 0.55);
+function wrap(s, max) {
+  const out = []; let line = '', lw = 0;
+  for (const word of String(s).split(/\s+/).filter(Boolean)) {
+    let ww = 0; for (const ch of word) ww += chW(ch);
+    if (line && lw + 0.3 + ww > max) { out.push(line); line = ''; lw = 0; }
+    if (!line && ww > max) {   /* 아주 긴 낱말은 글자 단위로 자른다 */
+      let piece = '', pw = 0;
+      for (const ch of word) { if (pw + chW(ch) > max) { out.push(piece); piece = ''; pw = 0; } piece += ch; pw += chW(ch); }
+      line = piece; lw = pw; continue;
+    }
+    lw += (line ? 0.3 : 0) + ww; line = line ? line + ' ' + word : word;
+  }
+  if (line) out.push(line);
+  return out.length ? out : [''];
+}
+
+/* ---- 0 입력: 예시 대화 → system / 템플릿 머리표 / user / assistant → 토큰 */
+const IN = (() => {
+  const b = B(0), msgs = EXAMPLE.messages || [];
+  const RC = { system: 'ink2', user: 'act', assistant: TC };
+  const rows = [];
+  for (const m of msgs) wrap(m.content, 28).forEach((s, j) => rows.push({ role: j === 0 ? m.role : '', c: RC[m.role] || 'ink2', s }));
+  const n = Math.max(1, rows.length), dep = n * 1.5 + 0.6, bot = -8.6, top = bot - dep, zc = (top + bot) / 2;
+  /* 대화 글자는 장면 0(입력)에서만 보인다. 토큰 장면에서는 상자만 흐리게 남겨 판 가장자리에서 잘린 글자가 보이지 않게 한다 */
+  const exName = EXAMPLE.plain ? '예시 문장' : '예시 대화';
+  b.box(-15, zc, 23, dep, 0, 0.3, 'cell', { dim: [1], meta: exName + ': 메시지 ' + msgs.length + '개 (' + msgs.map((m) => m.role).join(', ') + ')' });
+  b.text(-26, 0.5, top - 0.7, exName, { al: 'left', size: 0.55, c: 'ink2', ph: [0] });
+  rows.forEach((r, k) => {
+    const z = top + 1.0 + k * 1.5;
+    if (r.role) b.text(-26, 0.6, z, r.role, { al: 'left', size: 0.5, mono: true, c: r.c, w: 600, ph: [0] });
+    b.text(-22.6, 0.6, z, r.s, { al: 'left', size: 0.58, ph: [0] });
+  });
+  /* 토큰 띠: 폭은 잰 토큰 수에 비례 */
+  const seg = [['system', TK.system || 0, 'cell', 'ink2', 'system · 지시문'], ['template', TK.template || 0, 'faint', 'ink2', EXAMPLE.plain ? '시작 표시(BOS)' : '템플릿 머리표'],
+    ['user', TK.user || 0, 'act', 'act', 'user · 질문'], ['assistant', TK.target || 0, TC, TC, 'assistant · 답']].filter((s) => s[1] > 0);
+  const BW = 25.2, zb = -5, segX = {};
+  let x = -BW / 2;
+  seg.forEach(([k, cnt, c, tc, lab], i) => {
+    const w = cnt / NT * BW;
+    b.box(x + w / 2, zb, w, 2.2, 0, 0.5, c, { meta: lab + ' · ' + fmt(cnt) + '토큰' + (k === 'template' && !EXAMPLE.plain ? ' (실제로는 메시지마다 앞뒤에 흩어져 있다)' : '') });
+    /* 이름표는 띠 위아래로 번갈아 쓴다. 아래쪽은 바닥 높이에 써서 띠 앞면과 겹치지 않게 한다 */
+    b.text(x + w / 2, i % 2 ? 0.1 : 0.9, i % 2 ? zb + 2.2 : zb - 2.1, (k === 'template' ? (EXAMPLE.plain ? 'BOS' : '템플릿') : k) + ' ' + fmt(cnt), { size: 0.55, mono: true, c: tc, w: 600 });
+    segX[k] = x + w / 2; x += w;
+  });
+  const ux = segX.user != null ? segX.user : 0;
+  if (ux < -3.5) b.line([[ux, 0.3, bot], [ux, 0.3, zb - 1.1]], { c: 'act', w: 2, dim: [1] });
+  else b.line([[-3.5, 0.3, zc], [ux, 0.3, zc], [ux, 0.3, zb - 1.1]], { c: 'act', w: 2, dim: [1] });
+  /* 토큰 하나 = 점 하나 */
+  const p = clamp(Math.sqrt(24.8 * 7.6 / NT), 0.4, 1.0), cols = Math.min(NT, Math.floor(24.8 / p) + 1), nrow = Math.ceil(NT / cols);
+  const dz = 1.5, gp = gridPos(cols, p, 0, dz, 0.12, NT), gr = (cols - 1) * p / 2, gd = (nrow - 1) * p / 2;
+  b.dots(NT, p * 0.65, [{ pos: gp, col: () => 'cell' }, { pos: gp, col: (k) => (k < TK.prompt ? 'dot' : TC) }], {
+    meta: (k, ph) => (ph === 0 ? '토큰 한 개 (이 예시는 ' + fmt(NT) + '개)' : k < TK.prompt ? '프롬프트 토큰 (' + fmt(TK.prompt) + '개)' : '답(assistant) 토큰 (' + fmt(TK.target) + '개)'),
+  });
+  b.text(gr + 1.0, 0.7, dz - 0.9, '토큰 ' + fmt(NT), { al: 'left', size: 0.9, w: 600, mono: true, ph: [1] });
+  b.text(gr + 1.0, 0.7, dz + 0.9, '= ' + fmt(TK.prompt) + ' + ' + fmt(TK.target), { al: 'left', size: 0.7, mono: true, c: 'ink2', ph: [1] });
+  const z0 = top - 1.3, z1 = Math.max(6.5, dz + gd + 1.2);
+  PL.push({ z0, z1, st: 0, name: '입력', far: '입력' });
+  return { zb, top, dz, gl: -gr, gd, z0, z1 };
+})();
+
+/* ---- 1 임베딩 (learned면 위치 임베딩 표를 더한다) */
+const EZ = IN.z1 + 2.2;
+const EMB = (() => {
+  const b = B(1), z = EZ + 5.5;
+  b.box(-16.5, z, 19, 4.4, 0, 0.6, 'w', { meta: '토큰 임베딩 표(' + NN.emb + ') ' + fmt(V) + ' × ' + fmt(HID) + ' = ' + fmt(COUNTS.emb) + '개 · ' + FROZEN
+    + (FT ? ' · LoRA 없음' : '') + (MODEL.tied ? ' · LM head와 공유(tied)' : '') + ' · 가로 길이는 줄여 그림' });
+  b.text(-16.5, 0.9, z - 3.3, '토큰 임베딩 표' + (FT ? ' · 얼림' : ''), { size: 0.75, w: 600 });
+  b.text(-16.5, 0.9, z - 0.6, fmt(V) + ' × ' + fmt(HID), { size: 0.6, mono: true, c: 'onc' });
+  b.text(-16.5, 0.9, z + 0.8, fmt(COUNTS.emb) + '개', { size: 0.5, mono: true, c: 'onc' });
+  b.line([[-7, 0.3, z], [-3, 0.3, z]], { c: 'act', w: 2 });
+  const xs = fmt(NT) + ' × ' + fmt(HID);
+  b.box(0, z, 6, 1.6, 0, 0.6, 'act', { meta: (LEARNED ? '토큰 벡터 : ' : '잔차 줄기의 값 x : ') + xs + ' (토큰마다 ' + fmt(HID) + '차원)'
+    + (ROPE ? '. 위치 정보는 여기서 더하지 않고 층마다 RoPE로 넣는다' : '') });
+  b.text(3.8, 0.8, z, (LEARNED ? '토큰 벡터  ' : 'x  ') + xs, { al: 'left', size: 0.65, mono: true, c: 'act', w: 600 });
+  if (!LEARNED) { PL.push({ z0: EZ, z1: EZ + 11.8, st: 1, name: '임베딩' }); return { z, add: null, z1: EZ + 11.8 }; }
+  const pz = z + 6.0, wTrue = MODEL.maxPos * U, pw = Math.min(19, wTrue);
+  b.box(-16.5, pz, pw, 4.4, 0, 0.6, 'w', { meta: '위치 임베딩 표(' + NN.pos + ') ' + fmt(MODEL.maxPos) + ' × ' + fmt(HID) + ' = ' + fmt(COUNTS.pos) + '개 · ' + FROZEN
+    + (wTrue > 19 ? ' · 가로 길이는 줄여 그림' : ' · 실제 비율') });
+  b.text(-16.5 - pw / 2 - 0.6, 0.9, pz - 0.5, '위치 임베딩 표', { al: 'right', size: 0.6, w: 600 });
+  b.text(-16.5 - pw / 2 - 0.6, 0.9, pz + 0.8, fmt(MODEL.maxPos) + ' × ' + fmt(HID), { al: 'right', size: 0.5, mono: true, c: 'ink2' });
+  b.line([[-16.5 + pw / 2, 0.3, pz], [-0.85, 0.3, pz]], { c: 'act', w: 2 });
+  b.box(0, pz, 1.7, 1.7, 0, 0.7, 'act', { meta: '더하기: 토큰 벡터에 자리마다 위치 벡터를 더한다 → x : ' + xs });
+  b.text(0, 1.1, pz, '+', { size: 0.9, w: 600, c: 'onc' });
+  b.text(1.6, 0.8, pz, 'x  ' + xs, { al: 'left', size: 0.65, mono: true, c: 'act', w: 600 });
+  PL.push({ z0: EZ, z1: pz + 3.3, st: 1, name: '임베딩' });
+  return { z, add: pz, z1: pz + 3.3 };
+})();
+const ZB1 = EMB.z1 + 1.5;       /* 층 1이 시작하는 z */
+const zbOf = (L) => ZB1 + (L - 1) * PB;
+
+/* ---- 층 하나를 빠짐없이 그린다: 정규화 → q k v (+RoPE) → 마스크드 어텐션 → o → 더하기 → 정규화 → gate·up(또는 fc) → act → down(또는 proj) → 더하기 */
+const ATT_META = '마스크드 멀티헤드 어텐션 · 헤드 ' + MODEL.heads + '개(각 ' + MODEL.headDim + '차원)'
+  + (MODEL.kvHeads < MODEL.heads ? ', K·V ' + MODEL.kvHeads + '벌을 ' + (MODEL.heads / MODEL.kvHeads) + '개씩 나눠 씀' : '')
+  + ' · softmax(QKᵀ/√' + MODEL.headDim + ' + 마스크)·V · 학습하는 값 없음';
+function buildLayer(L) {
+  const zb = zbOf(L), one = L === 1, g = GEO;
+  const A = B(one ? 2 : 4), M = B(one ? 3 : 4);
+  const cuA = one && !!CU && CU.sec === 2, cuM = one && !!CU && CU.sec === 3;
+  const dA = cuA ? { dim: [1] } : {}, dM = cuM ? { dim: [1] } : {};       /* LoRA를 가까이 볼 때 나머지는 흐리게 */
+  const tA = cuA ? { ph: [0, 2] } : {}, tM = cuM ? { ph: [0] } : {};     /* 그때 이름표는 감춘다 */
+  const nm = (s) => '층 ' + L + ' · ' + s;
+  const al = (pts) => A.line(pts.map((p) => [p[0], 0.3, zb + p[1]]), Object.assign({ c: 'act', w: 2 }, dA));
+  const ml = (pts) => M.line(pts.map((p) => [p[0], 0.3, zb + p[1]]), Object.assign({ c: 'act', w: 2 }, dM));
+  const bias = (k) => (MODEL.bias && (ATTK.indexOf(k) >= 0 ? MODEL.bias[k] : MODEL.bias.mlp) ? SH[k][1] : 0);
+  const mk = (S, k, dm) => S.unit(g[k].x, zb + g[k].z, SH[k][0], SH[k][1], nm(NN[k]),
+    Object.assign({ target: LT.has(k), bias: bias(k) }, CU && one && CU.key === k ? {} : dm));
+  /* 판 위 크기 글씨: 판이 너무 얕으면 판 바로 아래 바닥에 쓴다 */
+  const shapeTxt = (S, u, k, ph) => {
+    const d = u.z1 - u.z0, s = fmt(SH[k][1]) + ' × ' + fmt(SH[k][0]);
+    if (d >= 0.5) S.text(u.cx, 0.9, u.cz, s, { size: d >= 2 ? 0.58 : Math.min(0.46, d * 0.72), mono: true, c: 'onc', ph });
+    else S.text(u.cx, 0.1, u.z1 + 0.6, s, { size: 0.42, mono: true, c: 'ink2', ph });
+  };
+  const phA = cuA ? [0, 2] : undefined, phM = cuM ? [0] : undefined;
+  /* 줄기에서 들어오는 값과 층 이름 */
+  A.box(0, zb + 0.6, 6, 1.2, 0, 0.6, 'act', Object.assign({ meta: nm('들어오는 값 x : ' + fmt(NT) + ' × ' + fmt(HID)) }, dA));
+  /* 층 2~N은 판 왼쪽 이름표가 같은 이름을 쓰므로 장면 머리글은 층 1에만 둔다 */
+  if (one) A.text(-4.2, 0.5, zb + 0.9, '층 ' + L, Object.assign({ al: 'right', size: 1.2, w: 600 }, tA));
+  A.text(4.2, 0.5, zb + 0.6, WORD + ' ' + fmt(COUNTS.layer.total) + '개', Object.assign({ al: 'left', size: 0.5, c: 'w', w: 600 }, tA));
+  if (FT) A.text(10.8, 0.5, zb + 0.6, '+ LoRA ' + fmt(COUNTS.lora.perLayer) + '개', Object.assign({ al: 'left', size: 0.5, c: 'lora', w: 600, lora: true }, tA));
+  /* 어텐션 가지 */
+  al([[0, 2.6], [4, 2.6]]);
+  A.box(7, zb + 2.6, 6, 1.0, 0, 0.6, 'w', Object.assign({ meta: nm(NORM + '(' + NN.norm1 + ') · ' + NORMTXT + ' · ' + FROZEN + ' · 크기는 키워 그림') }, dA));
+  A.text(10.6, 0.8, zb + 2.6, NORM + ' · ' + WORD + ' ' + fmt(COUNTS.layer.norm1) + '개', Object.assign({ al: 'left', size: 0.5, c: 'ink2' }, tA));
+  const q = mk(A, 'q', dA), k = mk(A, 'k', dA), v = mk(A, 'v', dA);
+  al([[7, 3.1], [7, 4.4], [v.cx, 4.4]]);
+  [q, k, v].forEach((u) => al([[u.cx, 4.4], [u.cx, 6]]));
+  [['q', q], ['k', k], ['v', v]].forEach(([key, u]) => {
+    A.text(u.cx, 0.9, zb + 5.2, NN[key], Object.assign({ size: 0.8, mono: true, w: 600 }, tA));
+    if (one) shapeTxt(A, u, key, phA);
+  });
+  const at = g.attTop, ax = g.attX, qz = q.z1 - zb, kz = k.z1 - zb, vz = v.z1 - zb;
+  if (ROPE) {   /* RoPE: q와 k에만 */
+    const rq = [q.cx + 1.6, Math.min(qz + 1.5, at - 1.2)], rk = [k.cx - 2.0, Math.min(kz + 2.5, at - 1.2)];
+    A.box(rq[0], zb + rq[1], 2.6, 0.9, 0, 0.4, 'cell', Object.assign({ meta: nm('RoPE: 위치 정보를 q에 회전으로 넣는다 (학습하는 값 없음)') }, dA));
+    A.box(rk[0], zb + rk[1], 2.6, 0.9, 0, 0.4, 'cell', Object.assign({ meta: nm('RoPE: 위치 정보를 k에 회전으로 넣는다 (학습하는 값 없음)') }, dA));
+    A.text(rq[0], 0.7, zb + rq[1], 'RoPE', Object.assign({ size: 0.42, mono: true }, tA));
+    A.text(rk[0], 0.7, zb + rk[1], 'RoPE', Object.assign({ size: 0.42, mono: true }, tA));
+    al([[q.cx, qz], [rq[0], rq[1] - 0.5]]); al([[rq[0], rq[1] + 0.5], [ax - 1.6, at]]);
+    al([[k.cx, kz], [rk[0], rk[1] - 0.5]]); al([[rk[0], rk[1] + 0.5], [ax + 0.4, at]]);
+  } else { al([[q.cx, qz], [ax - 1.6, at]]); al([[k.cx, kz], [ax + 0.4, at]]); }
+  al([[v.cx, vz], [ax + 2.4, at]]);
+  /* 마스크드 멀티헤드 어텐션: 삼각형 무늬는 모양만 */
+  const ac = at + 3.3;
+  A.box(ax, zb + ac, 8.4, 6.6, 0, 0.3, 'cell', Object.assign({ meta: nm(ATT_META) }, dA));
+  const tri = []; for (let r = 0; r < 16; r++) for (let c = 0; c <= r; c++) tri.push([ax - 2.7 + c * 0.36, 0.42, zb + at + 0.6 + r * 0.36]);
+  A.dots(tri.length, 0.26, [{ pos: (i) => tri[i], col: () => 'act' }], Object.assign({ meta: () => '어텐션 무늬(모양만 그림): 각 토큰은 자기와 앞의 토큰만 본다' }, dA));
+  A.text(ax + 4.8, 0.6, zb + ac - 0.9, '마스크드 멀티헤드 어텐션', Object.assign({ al: 'left', size: 0.62, w: 600 }, tA));
+  A.text(ax + 4.8, 0.6, zb + ac + 0.6, '헤드 ' + MODEL.heads + '개 · 앞 토큰만 봄 · softmax', Object.assign({ al: 'left', size: 0.5, c: 'ink2' }, tA));
+  al([[ax - 0.4, at + 6.6], [g.o.x + wOf('o') / 2, g.o.z]]);
+  const o = mk(A, 'o', dA);
+  A.text(o.x0 - 0.6, 0.9, o.cz, NN.o, Object.assign({ al: 'right', size: 0.8, mono: true, w: 600 }, tA));
+  if (one) shapeTxt(A, o, 'o', phA);
+  al([[o.x0, o.z1 - zb - 0.8], [0.9, g.add1]]);
+  A.box(0, zb + g.add1, 1.7, 1.7, 0, 0.7, 'act', Object.assign({ meta: nm('더하기(잔차 연결): 줄기의 값에 어텐션 결과를 더한다') }, dA));
+  A.text(0, 1.1, zb + g.add1, '+', Object.assign({ size: 0.9, w: 600, c: 'onc' }, tA));
+  /* MLP 가지 */
+  const n2 = g.n2;
+  ml([[0, n2], [4, n2]]);
+  M.box(7, zb + n2, 6, 1.0, 0, 0.6, 'w', Object.assign({ meta: nm(NORM + '(' + NN.norm2 + ') · ' + NORMTXT + ' · ' + FROZEN + ' · 크기는 키워 그림') }, dM));
+  M.text(10.6, 0.8, zb + n2, NORM + ' · ' + WORD + ' ' + fmt(COUNTS.layer.norm2) + '개', Object.assign({ al: 'left', size: 0.5, c: 'ink2' }, tM));
+  const U2 = {};
+  let actX;
+  if (GATED) {
+    const gt = mk(M, 'gate', dM), up = mk(M, 'up', dM);
+    U2.gate = gt; U2.up = up;
+    ml([[7, n2 + 0.5], [7, n2 + 1.8], [up.cx, n2 + 1.8]]);
+    [gt, up].forEach((u) => ml([[u.cx, n2 + 1.8], [u.cx, g.guTop]]));
+    M.text(gt.cx, 0.9, zb + g.guTop - 0.7, NN.gate, Object.assign({ size: 0.7, mono: true, w: 600 }, tM));
+    M.text(up.cx, 0.9, zb + g.guTop - 0.7, NN.up, Object.assign({ size: 0.7, mono: true, w: 600 }, tM));
+    if (one) [['gate', gt], ['up', up]].forEach(([key, u]) => {
+      M.text(u.cx, 0.9, u.cz - 0.5, fmt(SH[key][1]), { size: 0.55, mono: true, c: 'onc', ph: phM });
+      M.text(u.cx, 0.9, u.cz + 0.8, '× ' + fmt(SH[key][0]), { size: 0.55, mono: true, c: 'onc', ph: phM });
+    });
+    const gb = gt.z1 - zb, aw = up.cx - gt.cx + 1;
+    actX = (gt.cx + up.cx) / 2;
+    ml([[gt.cx, gb], [actX - aw / 2 + 2.7, g.act - 0.7]]); ml([[up.cx, gb], [actX + aw / 2 - 2.7, g.act - 0.7]]);
+    M.box(actX, zb + g.act, aw, 1.4, 0, 0.6, 'act', Object.assign({ meta: nm(MODEL.act + '(gate) × up : ' + fmt(MODEL.ffn) + '차원으로 넓어진 값 · 학습하는 값 없음') }, dM));
+    M.text(actX, 1.0, zb + g.act, MODEL.act + '(gate) × up', Object.assign({ size: 0.55, mono: true, c: 'onc' }, tM));
+  } else {
+    const fc = mk(M, 'fc', dM);
+    U2.fc = fc;
+    ml([[7, n2 + 0.5], [7, n2 + 1.8], [fc.cx, n2 + 1.8], [fc.cx, g.guTop]]);
+    M.text(fc.cx, 0.9, zb + g.guTop - 0.7, NN.fc, Object.assign({ size: 0.7, mono: true, w: 600 }, tM));
+    if (one) {
+      M.text(fc.cx, 0.9, fc.cz - 0.5, fmt(SH.fc[1]), { size: 0.55, mono: true, c: 'onc', ph: phM });
+      M.text(fc.cx, 0.9, fc.cz + 0.8, '× ' + fmt(SH.fc[0]), { size: 0.55, mono: true, c: 'onc', ph: phM });
+    }
+    actX = fc.cx;
+    ml([[fc.cx, fc.z1 - zb], [fc.cx, g.act - 0.7]]);
+    M.box(actX, zb + g.act, 7, 1.4, 0, 0.6, 'act', Object.assign({ meta: nm(MODEL.act + ' : ' + fmt(MODEL.ffn) + '차원으로 넓어진 값에 하나씩 적용 · 학습하는 값 없음') }, dM));
+    M.text(actX, 1.0, zb + g.act, MODEL.act + '(fc)', Object.assign({ size: 0.55, mono: true, c: 'onc' }, tM));
+  }
+  const bk = GATED ? 'down' : 'proj', dn = mk(M, bk, dM);
+  U2[bk] = dn;
+  ml([[actX, g.act + 0.7], [dn.cx, g[bk].z]]);
+  M.text(dn.x0 - 0.6, 0.9, dn.cz, NN[bk], Object.assign({ al: 'right', size: 0.7, mono: true, w: 600 }, tM));
+  if (one) shapeTxt(M, dn, bk, phM);
+  ml([[dn.x0, dn.z1 - zb - 0.8], [0.9, g.add2]]);
+  M.box(0, zb + g.add2, 1.7, 1.7, 0, 0.7, 'act', Object.assign({ meta: nm('더하기(잔차 연결): 줄기의 값에 MLP 결과를 더한다') }, dM));
+  M.text(0, 1.1, zb + g.add2, '+', Object.assign({ size: 0.9, w: 600, c: 'onc' }, tM));
+  trunk(zb + 1.2, zb + g.add1 - 0.9); trunk(zb + g.add1 + 0.9, zb + g.add2 - 0.9); trunk(zb + g.add2 + 0.9, zb + PB);
+  if (one && CU) {   /* LoRA를 가까이서 볼 때의 이름표 */
+    const S = CU.sec === 2 ? A : M, u = Object.assign({ q, k, v, o }, U2)[CU.key], din = SH[CU.key][0], dout = SH[CU.key][1], r = LORA.r;
+    const deep = u.z1 - u.z0 >= 2.4, wz = deep ? u.cz - 0.6 : u.z1 + 1.2, wy = deep ? 0.9 : 0.1;
+    S.text(u.cx, wy, wz, 'W₀', { size: 0.9, w: 600, c: deep ? 'onc' : 'w', ph: [1] });
+    S.text(u.cx, wy, wz + 1.4, MODEL.frozen ? '얼림 · ' + MODEL.frozen : '얼림', { size: 0.5, c: deep ? 'onc' : 'w', ph: [1] });
+    /* 이름과 크기는 W0 오른쪽 끝에 맞춰 왼쪽으로 늘어나게 쓴다(A 띠 이름표와 겹치지 않게) */
+    S.text(u.x1, 0.9, u.z0 - 0.7, NN[CU.key] + '  ' + fmt(dout) + ' × ' + fmt(din), { al: 'right', size: 0.5, mono: true, ph: [1] });
+    S.text(u.bx - 0.2, 0.3, u.z1 + (deep ? 0.8 : 3.4), 'B  ' + fmt(dout) + ' × ' + r, { al: 'left', size: 0.5, mono: true, c: 'lora', w: 600, ph: [1], lora: true });
+    S.text(u.ax, 1.3, u.z0 - 0.7, 'A  ' + r + ' × ' + fmt(din), { size: 0.5, mono: true, c: 'lora', w: 600, ph: [1], lora: true });
+    S.text(u.ax, 0.6, u.z0 + 2.0, 'W₀x + (α / r) · BAx', { size: 0.5, ph: [1], lora: true });
+    S.text(u.ax, 0.6, u.z0 + 3.2, 'r = ' + r + '   α = ' + LORA.alpha, { size: 0.45, mono: true, c: 'ink2', ph: [1], lora: true });
+  }
+  if (one) {
+    PL.push({ z0: zb - 0.7, z1: zb + n2 - 1.1, st: 2, name: '층 1 · 어텐션', far: farOf(1) });
+    PL.push({ z0: zb + n2 - 0.9, z1: zb + PB - 1.1, st: 3, name: '층 1 · MLP' });
+  } else PL.push({ z0: zb - 0.7, z1: zb + PB - 1.1, st: 4, name: '층 ' + L, L, far: farOf(L) });
+}
+for (let L = 1; L <= NL; L++) buildLayer(L);
+
+/* ---- 5 출력: 마지막 정규화 → LM head → 로짓 → softmax → 다음 토큰 (+ 학습 손실) */
+const ZO = ZB1 + NL * PB;
+const OUT = (() => {
+  const b = B(5), Z = (z) => ZO + z;
+  b.box(0, Z(0.6), 6, 1.2, 0, 0.6, 'act', { meta: '마지막 층(' + NL + ')을 지난 값 x : ' + fmt(NT) + ' × ' + fmt(HID) });
+  b.box(0, Z(4.2), 6, 1.0, 0, 0.6, 'w', { meta: '마지막 ' + NORM + '(' + NN.normF + ') · ' + NORMTXT + ' · ' + FROZEN + ' · 크기는 키워 그림' });
+  b.text(3.6, 0.8, Z(4.2), NORM + ' · ' + WORD + ' ' + fmt(COUNTS.normF) + '개', { al: 'left', size: 0.5, c: 'ink2' });
+  b.box(-16.5, Z(9.2), 19, 4.4, 0, 0.6, 'w', { meta: MODEL.tied
+    ? 'LM head(' + NN.head + ') · 토큰 임베딩 표(' + NN.emb + ')를 그대로 다시 씀(tied) · 더해지는 값 0개 · 가로 길이는 줄여 그림'
+    : 'LM head(' + NN.head + ') ' + fmt(V) + ' × ' + fmt(HID) + ' = ' + fmt(COUNTS.head) + '개 · ' + FROZEN + (FT ? ' · LoRA 없음' : '') + ' · 가로 길이는 줄여 그림' });
+  b.text(-16.5, 0.9, Z(6.0), MODEL.tied ? 'LM head · 임베딩과 공유' : 'LM head' + (FT ? ' · 얼림' : ''), { size: 0.75, w: 600 });
+  b.text(-16.5, 0.9, Z(8.6), fmt(V) + ' × ' + fmt(HID), { size: 0.6, mono: true, c: 'onc' });
+  b.text(-16.5, 0.9, Z(10.0), MODEL.tied ? '공유(tied) · 추가 0개' : fmt(COUNTS.head) + '개', { size: 0.5, mono: !MODEL.tied, c: 'onc' });
+  b.line([[-7, 0.3, Z(9.2)], [-3, 0.3, Z(13.6)]], { c: 'act', w: 2 });
+  b.box(3, Z(14.2), 12, 1.6, 0, 0.6, 'act', { meta: '로짓: 자리 ' + fmt(NT) + '개마다 어휘 ' + fmt(V) + '개의 점수' });
+  b.text(3, 1.0, Z(14.2), '로짓  ' + fmt(NT) + ' × ' + fmt(V), { size: 0.55, mono: true, c: 'onc' });
+  b.box(0, Z(18.2), 9, 1.4, 0, 0.6, 'act', { meta: 'Softmax로 확률을 만들고 다음 토큰 하나를 고른다' });
+  b.text(0, 1.0, Z(18.2), 'softmax → 하나 뽑기', { size: 0.52, c: 'onc' });
+  b.box(0, Z(21.6), 1.5, 1.5, 0, 0.8, TC, { meta: '고른 다음 토큰: 입력 끝에 붙어 다시 맨 위로 간다' });
+  b.text(1.5, 0.8, Z(21.6), '다음 토큰', { al: 'left', size: 0.55, c: TC, w: 600, ph: [1, 2] });
+  b.text(-9, 0.6, Z(20.5), '입력 끝에 붙여 다시 위로', { size: 0.55, c: TC, ph: [1] });
+  /* 이 예시의 답(assistant) */
+  const am = (EXAMPLE.messages || []).filter((m) => m.role === 'assistant').pop();
+  const al = wrap(am ? am.content : '', 30), top = Z(18.8), dep = 2.4 + al.length * 1.38 + 1.0;
+  b.box(24, top + dep / 2, 20, dep, 0, 0.3, 'cell', { ph: [1, 2], meta: '이 예시의 답(assistant) · ' + fmt(TK.target) + '토큰' });
+  b.text(14.8, 0.6, top + 1.2, 'assistant 답 · ' + fmt(TK.target) + '토큰', { al: 'left', size: 0.72, w: 600, c: TC, ph: [1, 2] });
+  al.forEach((s, j) => b.text(14.8, 0.6, top + 3.1 + j * 1.38, s, { al: 'left', size: 0.58, ph: [1, 2] }));
+  let end = Math.max(top + dep, Z(23.0));
+  if (TRAIN_ON) {   /* 손실 가리개: 프롬프트는 −100, 답 토큰에서만 손실 */
+    const wP = TK.prompt / NT * 25.2, wT = TK.target / NT * 25.2;
+    b.box(-12.6 + wP / 2, Z(31.0), wP, 1.6, 0, 0.5, 'cell', { ph: [2], meta: '프롬프트 ' + fmt(TK.prompt) + '토큰: 레이블을 −100으로 가려 손실에서 뺀다' });
+    b.box(-12.6 + wP + wT / 2, Z(31.0), wT, 1.6, 0, 0.9, 'lora', { ph: [2], meta: '답 ' + fmt(TK.target) + '토큰: 여기서만 손실을 계산한다' });
+    b.text(-12.6, 0.7, Z(29.0), '손실은 답 토큰에서만', { al: 'left', size: 0.62, w: 600, ph: [2] });
+    b.text(-12.6 + wP / 2, 0.8, Z(31.0), fmt(TK.prompt) + ' · −100', { size: 0.5, mono: true, ph: [2] });
+    b.text(-12.6 + wP + wT / 2, 1.2, Z(33.0), fmt(TK.target), { size: 0.6, mono: true, w: 600, c: 'lora', ph: [2] });
+    end = Math.max(end, Z(34.1));
+  }
+  PL.push({ z0: ZO, z1: end + 2.5, st: 5, name: '출력', far: '출력' });
+  return { z1: end + 2.5 };
+})();
+
+/* ---- 6 결과(선택): 지표마다 조건별 막대. 바닥에 눕혀 그려서 막대와 숫자가 서로 가리지 않게 한다 */
+const RS = (() => {
+  if (!RESULTS) return null;
+  const b = B(6), z0 = OUT.z1 + 1.6, mets = RESULTS.metrics || [], nc = CONDS.length, unit = RESULTS.unit || '';
+  const all = [].concat.apply([], RESULTS.values || []).filter((x) => x != null);
+  const BL = 22, X0 = -8, BD = 0.8, BP = 1.1, GP = nc * BP + 1.5;   // 막대 최대 길이, 시작 x, 막대 깊이, 막대 간격, 지표 간격
+  const vmax = unit === '%' ? 100 : Math.max.apply(null, all.concat([1e-9])), HS = BL / vmax;
+  const fv = (x) => (Math.abs(x) >= 100 ? fmt(Math.round(x)) : x.toFixed(1));
+  b.text(X0, 0.3, z0 + 2.2, RESULTS.title || '결과', { al: 'left', size: 0.8, w: 600 });
+  /* 범례: 조건 색과 이름 */
+  CONDS.forEach((c, k) => {
+    const z = z0 + 3.8 + k * 0.9;
+    b.box(X0 + 0.3, z, 0.6, 0.6, 0, 0.12, c.color);
+    b.text(X0 + 1.0, 0.2, z + 0.15, c.label, { al: 'left', size: 0.42, c: 'ink2' });
+  });
+  const gz = z0 + 4.8 + nc * 0.9;
+  mets.forEach((name, r) => {
+    const zt = gz + r * GP, zm = zt + (nc * BP - (BP - BD)) / 2;
+    b.text(X0 - 0.8, 0.3, zm + 0.2, name, { al: 'right', size: 0.55, w: 600 });
+    b.box(X0 + BL / 2, zm, BL + 0.8, nc * BP + 0.3, 0, 0.06, 'cell');
+    (RESULTS.values[r] || []).forEach((x, k) => {
+      if (x == null || k >= nc) return;
+      const ci = RESULTS.ci && RESULTS.ci[r] && RESULTS.ci[r][k], z = zt + k * BP + BD / 2, w = Math.max(0.15, x * HS);
+      b.box(X0 + w / 2, z, w, BD, 0.06, 0.3, CONDS[k].color, { meta: CONDS[k].label + ' · ' + name + ' ' + fv(x) + unit + (ci ? '  [' + fv(ci[0]) + ', ' + fv(ci[1]) + ']' : '') });
+      b.text(X0 + w + 0.5, 0.4, z + 0.15, fv(x) + unit, { al: 'left', size: 0.45, mono: true });
+    });
+  });
+  const z1 = gz + mets.length * GP;
+  PL.push({ z0, z1: z1 + 1.0, st: 6, name: '결과', far: '결과' });
+  return { z0, z1, x0: X0 - 7, x1: X0 + BL + 5 };
+})();
+
+/* ---- 판의 가로 범위: 그린 상자와 글자에서 잰다 */
+{
+  const tw = (t) => { let e = 0; for (const ch of t.s) e += ch === ' ' ? 0.3 : ch.charCodeAt(0) > 0x2E80 ? 1 : t.mono ? 0.6 : 0.56; return e * t.size; };
+  let a = 1e9, c = -1e9;
+  for (const b of boxes) { a = Math.min(a, b.x0); c = Math.max(c, b.x1); }
+  for (const t of texts) { const w = tw(t), l = t.al === 'left' ? t.p[0] : t.al === 'right' ? t.p[0] - w : t.p[0] - w / 2; a = Math.min(a, l); c = Math.max(c, l + w); }
+  PXL = Math.floor(a - 0.5); PXR = Math.ceil(c + 3);
+}
+/* ---- 다음 토큰이 입력 끝으로 돌아가는 고리 (판 왼쪽 바깥으로 돈다) */
+B(5).line([[-0.8, 0.3, ZO + 21.6], [PXL - 2.6, 0.3, ZO + 21.6], [PXL - 2.6, 0.3, IN.dz], [IN.gl - 0.5, 0.3, IN.dz]], { c: TC, w: 2, ph: [1], rest: 0, ov: 0, fixw: true });
+/* ---- 줄기와 그 위를 내려가는 표시 */
+const T0 = IN.dz + IN.gd + 0.6;
+trunk(T0, EMB.z - 0.8);
+if (EMB.add != null) { trunk(EMB.z + 0.8, EMB.add - 0.85); trunk(EMB.add + 0.85, ZB1); } else trunk(EMB.z + 0.8, ZB1);
+[[1.2, 3.7], [4.7, 13.4], [15.0, 17.5], [18.9, 20.8]].forEach(([a, c]) => trunk(ZO + a, ZO + c));
+const FLOW = { z0: T0, z1: ZO + 20.8, n: 0, t: 0 };
+FLOW.n = clamp(Math.round((FLOW.z1 - FLOW.z0) / 30), 12, 90);
+B(-2).dots(FLOW.n, 0.6, [{ pos: (k) => [0, 0.8, FLOW.z0 + k], col: () => 'act' }], { always: true, flow: true });
+PL.forEach((p) => { p.q = [[0, 0], [0, 0], [0, 0], [0, 0]]; p.vis = false; });
+const ZEND = PL[PL.length - 1].z1, LEN = ZEND - PL[0].z0;
+
+/* ---------------------------------------------------------------- 단계 글 (모두 구성에서 계산한 숫자로 만든다) */
+const SWD = 1.2, SWT = clamp(0.6 * NL, 6, 24);   /* 훑기 전 기다림, 훑기 시간(초): 층 수에 비례 */
+const LXC = (-6 + GEO.R) / 2;
+const OVC = { fit: [PXL, PXR, PL[0].z0, ZEND], yaw: -0.3, pitch: 0.42 };
+const at = ATTK.filter((k) => LT.has(k)), mt = MLPK.filter((k) => LT.has(k));
+const pct = FT ? (COUNTS.lora.ratio * 100).toFixed(2) : '';
+const STEPS = [];
+{
+  const M_ = MODEL, qd = M_.heads * M_.headDim, kd = M_.kvHeads * M_.headDim, cfg = '모델 구성(config)';
+  const nLin = 4 + MLPK.length, tokSrc = (EXAMPLE.src ? EXAMPLE.src + ' · ' : '')
+    + (EXAMPLE.plain ? '토큰 수: 이 모델의 토크나이저로 잰 값(채팅 틀 없음)' : '토큰 수: 이 모델의 토크나이저와 채팅 템플릿으로 잰 값');
+  const EXPS = (M_.expect && M_.expect.src) || '공개된 합계';
+  const msgP = (m) => '<p class="msg"><i>' + esc(m.role) + '</i>' + esc(m.content) + '</p>';
+  const MSGS = EXAMPLE.messages || [], ANS = MSGS.filter((m) => m.role === 'assistant').pop();
+  const PMSGS = ANS ? MSGS.slice(0, MSGS.lastIndexOf(ANS)) : MSGS;
+  const narrowIn = PMSGS.length ? '<div class="narrow">' + PMSGS.map(msgP).join('') + '</div>' : '';
+  const narrowOut = ANS ? '<div class="narrow">' + msgP(ANS) + '</div>' : '';
+  const gqa = M_.kvHeads < M_.heads ? ' k와 v가 작은 까닭은 헤드 ' + M_.heads + '개가 K·V ' + M_.kvHeads + '벌을 ' + (M_.heads / M_.kvHeads) + '개씩 함께 쓰기 때문입니다(' + (M_.kvHeads === 1 ? 'MQA' : 'GQA') + ').' : '';
+  const mlpLora = mt.length ? ' LoRA는 ' + mt.map((k) => cj(NN[k])).join(', ') + '에 붙어 있습니다.' : FT ? ' MLP에는 LoRA를 붙이지 않았습니다.' : '';
+  STEPS.push({ key: 'overview', st: -1, row: [], t: '모델 전체를 위에서 아래로',
+    h: '<p>' + esc(M_.name) + '의 <b>층 ' + NL + '개 전부</b>를 하나도 빼지 않고 실제 비율로 세워 놓았습니다. 입력은 맨 위에 있고, 값은 가운데 보라색 줄기를 따라 층을 차례로 지나 맨 아래에서 다음 토큰 하나가 됩니다.</p>'
+      + '<p><b>파란 판</b>은 ' + (FT ? '학습하는 동안 바뀌지 않는 원래 가중치' : '모델의 가중치') + '이고, 판 위 모눈 한 칸에 값 ' + GC + '개(' + G + ' × ' + G + ')가 들어 있습니다. <b>보라색</b>은 층 사이를 흐르는 값'
+      + (FT ? '이고, 선형층 오른쪽의 <b>색 띠</b>는 새로 학습하는 LoRA 행렬' : '') + '입니다. 행렬의 모양과 개수는 실제와 같고, 값 하나하나의 숫자는 그리지 않았습니다.</p>',
+    src: '구성으로 센 값 · 전체 ' + fmt(COUNTS.total) + '개' + (FT ? ' · 학습 ' + fmt(COUNTS.lora.total) + '개' : '') + (EXP_OK === null ? '' : ' · ' + EXPS + pp(EXPS, '과', '와') + (EXP_OK ? ' 일치' : ' 다름(위 경고)')),
+    cam: OVC });
+  const parts = [['system', TK.system], ['user', TK.user], [EXAMPLE.plain ? '시작 표시(BOS)' : '템플릿 머리표', TK.template]].filter((p) => p[1] > 0).map((p) => '<b>' + p[0] + '</b> ' + fmt(p[1]) + '토큰');
+  STEPS.push({ key: 'input', st: 0, ph: 0, row: ['r-in'], t: EXAMPLE.plain ? '입력: 문장이 프롬프트가 됩니다' : '입력: 대화가 프롬프트가 됩니다',
+    h: '<p>' + (EXAMPLE.plain ? '이 모델은 채팅 틀이 없어 예시 문장을 그대로 토큰으로 바꿉니다. 프롬프트는 ' : '예시 대화를 채팅 템플릿에 넣으면 토큰 한 줄이 됩니다. 프롬프트는 ') + parts.join(', ') + '으로 이루어지고, 그 뒤 <b>assistant</b> 자리의 ' + fmt(TK.target) + '토큰이 모델이 내놓아야 할 답입니다.</p>'
+      + '<p>띠의 길이는 토큰 수에 비례합니다.' + (EXAMPLE.plain ? '' : ' 템플릿이 넣는 머리표 토큰은 실제로는 메시지마다 앞뒤에 흩어져 있지만 여기서는 한 덩어리로 모았습니다.') + '</p>' + narrowIn,
+    src: tokSrc, cam: { x: -3, z: IN.zb - 3.6, span: 50, dz: IN.zb + 1.1 - IN.z0 + 4.4 } });
+  STEPS.push({ key: 'tokens', st: 0, ph: 1, row: ['r-in'], t: '토큰 ' + fmt(NT) + '개',
+    h: '<p>이 예시를 이루는 토큰은 모두 <b>' + fmt(NT) + '개</b>이고, 점 하나가 토큰 하나입니다. 앞쪽 ' + fmt(TK.prompt) + '개는 프롬프트, 끝의 ' + fmt(TK.target) + '개는 assistant의 답입니다.</p><p>'
+      + (FT ? '답 부분은 학습 때 손실을 계산하는 자리입니다.' + (TRAIN_ON ? ' 출력 구간 끝에서 다시 나옵니다.' : '') : '생성할 때는 답 토큰을 하나씩 만들어 프롬프트 뒤에 이어 붙입니다.') + '</p>',
+    src: tokSrc, cam: { x: 3, z: IN.dz - 1.5, span: 44, dz: 13 } });
+  const posTxt = ROPE ? '그렇게 모인 ' + fmt(NT) + ' × ' + fmt(HID) + ' 값이 가운데 줄기에 올라 아래로 내려갑니다. 위치 정보는 이 단계에서 더하지 않고, 층마다 어텐션 안에서 RoPE로 q와 k를 회전시켜 넣습니다.'
+    : LEARNED ? '같은 자리 번호로 위치 임베딩 표(' + fmt(M_.maxPos) + ' × ' + fmt(HID) + ', ' + fmt(COUNTS.pos) + '개)에서도 한 줄씩 가져와 더합니다. 그 합인 ' + fmt(NT) + ' × ' + fmt(HID) + ' 값이 가운데 줄기에 올라 내려갑니다.'
+      : '위치 정보는 따로 더하지 않고, ' + fmt(NT) + ' × ' + fmt(HID) + ' 값이 그대로 줄기에 올라 내려갑니다.';
+  STEPS.push({ key: 'emb', st: 1, ph: 0, row: LEARNED ? ['r-emb', 'r-pos'] : ['r-emb'], t: '임베딩: 토큰마다 ' + fmt(HID) + '차원',
+    h: '<p>토큰 번호 하나마다 임베딩 표의 한 줄, 곧 ' + fmt(HID) + '차원 벡터를 가져옵니다. 표의 크기는 <b>' + fmt(V) + ' × ' + fmt(HID) + '</b>이고 ' + WORD + ' ' + fmt(COUNTS.emb) + '개입니다. 어휘 수가 너무 커서 표의 가로는 줄여 그렸습니다.</p><p>' + posTxt + '</p>',
+    src: cfg, cam: LEARNED ? { x: -8, z: (EMB.z + EMB.add) / 2 - 0.6, span: 46, dz: 18 } : { x: -8, z: EMB.z - 0.6, span: 46, dz: 12 } });
+  STEPS.push({ key: 'attn1', st: 2, ph: 0, row: ['r-n1', 'r-att'], t: '층 1: ' + NORM + ', 그리고 Q · K · V',
+    h: '<p>줄기의 값이 둘로 나뉘어 한쪽은 그대로 내려가고, 다른 쪽은 <b>' + NORM + '</b>' + pp(NORM, '을', '를') + ' 거쳐 ' + cj(NN.q) + ', ' + cj(NN.k) + ', ' + cj(NN.v) + ' 세 선형층에 들어갑니다. 정규화는 이 갈래에만 있고 줄기에는 없습니다. 구조도에서 블록 옆을 돌아가는 보라색 선이 그 줄기입니다.</p>'
+      + '<p>파란 판 하나가 가중치 행렬 하나이고, 모눈 한 칸이 값 <b>' + GC + '개</b>입니다. q는 ' + fmt(qd) + ' × ' + fmt(HID) + ', k와 v는 <b>' + fmt(kd) + ' × ' + fmt(HID) + '</b>입니다.' + gqa
+      + (at.length ? ' 판 오른쪽에 붙은 색 띠가 LoRA입니다.' : '') + '</p>',
+    src: cfg, cam: { x: (-6 + GEO.attR + 4) / 2, z: ZB1 + 6.8, span: Math.max(36, GEO.attR + 10), dz: 15 } });
+  const loraStep = () => {
+    const k = CU.key, din = SH[k][0], dout = SH[k][1], r = LORA.r, x0 = GEO[k].x, xr = extentX(x0, k), z0 = ZB1 + GEO[k].z, d = dOf(k);
+    const fg = (x) => (Number.isInteger(x) ? String(x) : x.toFixed(1));
+    return { key: 'lora', st: CU.sec, ph: 1, row: CU.sec === 2 ? ['r-att', 'r-l1'] : ['r-ffn', 'r-l2'], t: 'LoRA는 얼린 가중치 오른쪽에 붙습니다',
+      h: '<p>' + cj(NN[k]) + '의 원래 가중치 W₀(' + fmt(dout) + ' × ' + fmt(din) + ')는 모눈 ' + fg(dout / G) + ' × ' + fg(din / G) + '칸, 값 <b>' + fmt(din * dout) + '개</b>입니다. 이 값은 얼려 두고 바꾸지 않습니다'
+        + (M_.frozen ? '(저장 형식 ' + esc(M_.frozen) + ')' : '') + '. 대신 오른쪽에 <b>B</b>(' + fmt(dout) + ' × ' + r + ')와 <b>A</b>(' + r + ' × ' + fmt(din) + ') 두 행렬을 덧붙이고 이 둘만 학습합니다.</p>'
+        + '<p>층의 출력은 W₀x에 (α / r)·BAx를 더한 값이 됩니다. 여기서 r = ' + r + ', α = ' + LORA.alpha + '입니다. 랭크 ' + r + pp(r, '은', '는') + ' 모눈 한 칸의 폭보다 훨씬 작아서, 띠는 보이도록 실제보다 두껍게 그렸습니다.</p>',
+      src: 'LoRA: h = W₀x + (α / r)·BAx · 이 페이지의 LORA 설정',
+      cam: { x: (x0 + xr) / 2 + 0.53, z: z0 + d / 2, span: Math.max(15.5, xr - x0 + 5.76), dz: Math.max(8.4, d + 4) } };
+  };
+  if (CU && CU.sec === 2) STEPS.push(loraStep());
+  STEPS.push({ key: 'attn2', st: 2, ph: 2, row: ['r-att', 'r-add1'], t: '마스크드 어텐션, ' + NN.o + ', 더하기',
+    h: '<p>' + (ROPE ? 'q와 k에 RoPE로 자리 정보를 넣은 다음, ' : '') + '토큰마다 자기와 그 앞의 토큰만 보도록 가리고 어텐션을 계산합니다. 삼각형 무늬가 그 가림입니다. 헤드는 ' + M_.heads + '개, 헤드 하나는 ' + M_.headDim + '차원입니다.</p>'
+      + '<p>모든 헤드의 결과를 이어 붙여 출력 투영(' + cj(NN.o) + ')에 통과시키고, 그 결과를 줄기의 값에 <b>더합니다</b>. 이것이 잔차 연결입니다.' + (LT.has('o') ? ' 출력 투영에도 LoRA의 B와 A가 붙어 있습니다.' : '') + '</p>',
+    src: cfg, cam: { x: GEO.attX, z: ZB1 + (6 + GEO.add1) / 2 + 1.15, span: 42, dz: GEO.add1 - 6 + 3.7 } });
+  const ffn = fmt(M_.ffn);
+  STEPS.push({ key: 'mlp1', st: 3, ph: 0, row: ['r-n2', 'r-ffn', 'r-l2', 'r-add2'], t: '층 1: 피드포워드(MLP)',
+    h: GATED
+      ? '<p>어텐션을 더한 값이 다시 갈라져 ' + NORM + pp(NORM, '을', '를') + ' 거칩니다. 그다음 ' + cj(NN.gate, '과', '와') + ' ' + cj(NN.up, '이', '가') + ' 각각 <b>' + ffn + '차원</b>으로 넓히고, ' + esc(M_.act) + '(gate) × up으로 둘을 합칩니다. '
+        + cj(NN.down, '이', '가') + ' 이것을 ' + fmt(HID) + '차원으로 되돌려 줄기에 더합니다.</p><p>세 선형층의 값은 하나에 ' + fmt(HID * M_.ffn) + '개입니다.' + mlpLora + ' 층 하나의 ' + WORD + pp(WORD, '은', '는') + ' 모두 ' + fmt(COUNTS.layer.total) + '개입니다.</p>'
+      : '<p>어텐션을 더한 값이 다시 갈라져 ' + NORM + pp(NORM, '을', '를') + ' 거칩니다. ' + cj(NN.fc, '이', '가') + ' <b>' + ffn + '차원</b>으로 넓히면 활성화(' + esc(M_.act) + ')를 거친 뒤 '
+        + cj(NN.proj, '이', '가') + ' ' + fmt(HID) + '차원으로 되돌려 줄기에 더합니다.</p><p>두 선형층의 가중치는 하나에 ' + fmt(HID * M_.ffn) + '개' + (M_.bias && M_.bias.mlp ? '이고 편향이 따로 붙습니다.' : '입니다.') + mlpLora
+        + ' 층 하나의 ' + WORD + pp(WORD, '은', '는') + ' 모두 ' + fmt(COUNTS.layer.total) + '개입니다.</p>',
+    src: cfg, cam: { x: (-6 + GEO.mlpR + 4) / 2, z: ZB1 + (GEO.n2 + GEO.add2) / 2 + 0.95, span: Math.max(36, GEO.mlpR + 10), dz: GEO.add2 - GEO.n2 + 5.3 } });
+  if (CU && CU.sec === 3) STEPS.push(loraStep());
+  const zs = (L) => zbOf(L) + 0.47 * PB;
+  STEPS.push({ key: 'layers', st: 4, ph: 0, row: ['r-xN'], t: NL > 1 ? '층 2부터 ' + NL + '까지, 같은 구조 그대로' : '층 하나',
+    h: '<p>' + (NL > 1
+      ? '이제 카메라가 남은 층 ' + (NL - 1) + '개를 위에서부터 훑어 내려갑니다. 어느 층에나 ' + NORM + ' 두 개, 선형층 ' + nLin + '개, 어텐션 하나, 더하기 두 개가 똑같이 들어 있고, 층마다 '
+      : '이 모델은 층이 하나뿐이라 더 훑어 내려갈 층이 없습니다. 이 층에는 ' + NORM + ' 두 개, 선형층 ' + nLin + '개, 어텐션 하나, 더하기 두 개가 들어 있고, ')
+      + WORD + pp(WORD, '이', '가') + ' <b>' + fmt(COUNTS.layer.total) + '개</b>입니다.</p><p>'
+      + (FT ? 'LoRA가 붙은 자리는 모두 <b>' + fmt(COUNTS.lora.sites) + '곳</b>입니다. 학습하는 값은 <b>' + fmt(COUNTS.lora.total) + '개</b>로, 원래 가중치 ' + fmt(COUNTS.total) + '개의 ' + pct + '%에 그칩니다. '
+        : '층 ' + NL + '개를 모두 더하면 ' + fmt(COUNTS.layers) + '개이고, 임베딩과 마지막 정규화까지 합치면 ' + fmt(COUNTS.total) + '개입니다. ') + '판 위의 층을 누르면 그 층으로 갑니다.</p>',
+    src: cfg + (FT ? ' · LORA 설정' : ''),
+    cam: { x: LXC, z: zs(Math.min(2, NL)), span: Math.max(50, (GEO.R + 6) * 1.618), dz: 1.15 * PB, pitch: 0.72, yaw: -0.28 },
+    sweep: NL > 1 ? [zs(2), zs(NL), SWT] : null });
+  if (FT && CONDS.length > 1) {
+    const on = CONDS.filter((c) => c.lora).map((c) => '<b>' + esc(c.label) + '</b>'), off = CONDS.filter((c) => !c.lora).map((c) => '<b>' + esc(c.label) + '</b>');
+    STEPS.push({ key: 'conds', st: 4, ph: 1, row: ['r-xN', 'r-l1', 'r-l2'], t: '조건은 어댑터만 다릅니다',
+      h: '<p>원래 모델은 하나뿐이고, 조건마다 갈아 끼우는 것은 어댑터입니다. ' + (on.length ? on.join(', ') + ' 조건에는 LoRA가 붙' + (off.length ? '고, ' + off.join(', ') + ' 조건은 원래 모델만 씁니다.' : '습니다.') : '') + '</p>'
+        + '<p>아래 범례의 버튼으로 조건을 바꿔 보세요. 붙은 띠의 색이 따라 바뀌고, LoRA가 없는 조건에서는 파란 원래 모델만 남습니다.</p>',
+      src: 'CONDS 설정', cam: { x: LXC - 2.87, z: zbOf(Math.ceil(NL / 2) + (NL > 1 ? 1 : 0)) + PB / 2, dist: 4.7 * PB, yaw: -0.45, pitch: 0.55 } });
+  }
+  STEPS.push({ key: 'out', st: 5, ph: 0, row: ['r-fn', 'r-head'], t: '출력: 마지막 ' + NORM + pp(NORM, '과', '와') + ' LM head',
+    h: '<p>층 ' + NL + '개를 지난 값이 마지막 ' + NORM + pp(NORM, '을', '를') + ' 거치면, LM head가 자리마다 어휘 <b>' + fmt(V) + '개</b> 각각에 점수를 매깁니다. 이 점수를 로짓이라고 부릅니다.</p><p>'
+      + (M_.tied ? 'LM head는 따로 두지 않고 토큰 임베딩 표를 그대로 한 번 더 씁니다(tied). 그래서 여기서 늘어나는 값은 없습니다.' : 'LM head(' + fmt(V) + ' × ' + fmt(HID) + ')의 값은 ' + fmt(COUNTS.head) + '개입니다.')
+      + (FT ? ' LM head에는 LoRA를 붙이지 않았습니다.' : '') + '</p>',
+    src: cfg, cam: { x: -5, z: ZO + 10.4, span: 52, dz: 16 } });
+  STEPS.push({ key: 'soft', st: 5, ph: 1, row: ['r-soft'], t: 'Softmax: 다음 토큰을 뽑아 다시 넣습니다',
+    h: '<p>Softmax가 로짓을 확률로 바꾸면 그중에서 다음 토큰 하나를 고릅니다. 고른 토큰은 입력 끝에 붙어 맨 위부터 다시 내려옵니다.</p>'
+      + '<p>오른쪽 상자는 이 예시에서 assistant가 내놓을 답(' + fmt(TK.target) + '토큰)입니다. 답은 이 고리를 한 바퀴 돌 때마다 한 토큰씩 늘어납니다.</p>' + narrowOut,
+    src: cfg, cam: { x: 9, z: ZO + 23.4, span: 54, dz: 24 } });
+  if (TRAIN_ON) STEPS.push({ key: 'train', st: 5, ph: 2, row: ['r-soft'], t: '학습: 손실은 답 토큰에서만',
+    h: '<p>학습 때는 답 토큰 자리에서만 정답 토큰의 로그 확률을 평균해 손실로 씁니다. 앞쪽 프롬프트 ' + fmt(TK.prompt) + '토큰은 레이블을 −100으로 바꿔 손실 계산에서 뺍니다.</p>'
+      + '<p>이 손실의 기울기는 LoRA의 B와 A에만 반영됩니다. 학습하는 값은 ' + fmt(COUNTS.lora.total) + '개이고, 파란 원래 가중치는 그대로 남습니다.</p>',
+    src: TRAIN.src || '레이블 −100: 손실에서 빠지는 자리(PyTorch CrossEntropyLoss의 ignore_index 기본값)', cam: { x: 6, z: ZO + 26, span: 60, dz: 24 } });
+  if (RS) STEPS.push({ key: 'results', st: 6, ph: 0, row: ['r-res'], t: RESULTS.title || '결과',
+    h: '<p>지표 ' + RESULTS.metrics.length + '개를 조건마다 막대 하나로 눕혀 그렸습니다. 막대 끝의 숫자가 값입니다.' + (RESULTS.ci ? ' 막대에 마우스를 올리면 구간(CI)도 나옵니다.' : '') + '</p>',
+    src: RESULTS.src || '', cam: { fit: [RS.x0, RS.x1, RS.z0, RS.z1], yaw: -0.2, pitch: 0.8 } });
+  STEPS.push({ key: 'end', st: -1, row: [], t: '그린 것과 줄인 것',
+    h: '<p>맨 위에서 들어간 토큰이 층 ' + NL + '개를 모두 지나 다음 토큰이 되었습니다. 왼쪽 구조도의 블록이나 판 위의 층을 누르면 그 자리로 다시 갈 수 있습니다.</p>'
+      + '<p>층의 수, 행렬의 모양과 개수는 실제와 같습니다. 값 하나하나의 숫자는 그리지 않았습니다. ' + (FT ? 'LoRA 띠의 두께와 ' : '') + '정규화 판의 크기는 키워 그렸고, 임베딩 표와 LM head의 가로 길이는 어휘 수보다 짧게 줄였습니다.</p>',
+    src: cfg + ' · 키워 그리거나 줄인 것은 툴팁에도 적었습니다', cam: OVC });
+}
+ST.forEach((s, i) => { s.first = STEPS.findIndex((x) => x.st === i); });
+const KEYIDX = {};
+STEPS.forEach((s, i) => { KEYIDX[s.key] = i; });
+const FALLBACK = { lora: 'attn1', conds: 'layers', train: 'soft', results: 'end' };
+const idxOf = (k) => (KEYIDX[k] != null ? KEYIDX[k] : FALLBACK[k] != null ? idxOf(FALLBACK[k]) : 0);
+
+/* ---------------------------------------------------------------- 상태 */
+const cur = { st: -1, ph: 0 };
+let stepIdx = 0, quiet = 0, sweep = null;
+const wake = () => { quiet = 0; };
+const phaseOf = (st) => (st === cur.st ? cur.ph : st >= 0 ? ST[st].ovp : 0);
+const progress = () => (cur.st === -1 ? (stepIdx === 0 ? 0 : ST.length) : cur.st);
+function alphaOf(it) {
+  if (it.lora && !CONDS[cond].lora) return 0;
+  if (it.cond != null && it.cond !== cond) return 0;
+  if (it.always) return 1;
+  const ph = phaseOf(it.st);
+  if (it.ph && it.ph.indexOf(ph) < 0) return 0;
+  if (cur.st === -1) return it.ov;
+  if (it.st !== cur.st) return it.rest;
+  if (it.dim && it.dim.indexOf(ph) >= 0) return 0.14;
+  return 1;
+}
+/* 전체 보기: 판 네 모서리가 화면 여백 안에 들어오는 가장 가까운 거리를 찾는다(창 크기마다 다시 계산) */
+function fitCam(fb, yaw, pitch) {
+  const pts = [[fb[0], fb[2]], [fb[1], fb[2]], [fb[1], fb[3]], [fb[0], fb[3]]];
+  const mx = 0.05 * W + 12, mt0 = 0.05 * H + 12, mb = 0.05 * H + 60, ty = (mt0 + H - mb) / 2;
+  const t = { tx: (fb[0] + fb[1]) / 2, ty: 0, tz: (fb[2] + fb[3]) / 2, dist: 1, yaw, pitch };
+  const bounds = () => {
+    setupCam(t); const r = [1e9, -1e9, 1e9, -1e9];
+    for (const p of pts) { if (!proj(p[0], 0, p[1], T4)) return null; r[0] = Math.min(r[0], T4[0]); r[1] = Math.max(r[1], T4[0]); r[2] = Math.min(r[2], T4[1]); r[3] = Math.max(r[3], T4[1]); }
+    return r;
+  };
+  const fits = (d) => {
+    t.dist = d; t.tx = (fb[0] + fb[1]) / 2; t.tz = (fb[2] + fb[3]) / 2;
+    for (let it = 0; it < 10; it++) {   /* 대상 점을 옮겨 상자 가운데를 화면 가운데로 */
+      const r = bounds(); if (!r) return false;
+      const ex = (r[0] + r[1]) / 2 - W / 2, ey = (r[2] + r[3]) / 2 - ty, s = F / t.dist;
+      if (Math.abs(ex) < 0.5 && Math.abs(ey) < 0.5) break;
+      const a = RT[0], b = RT[2], c = UP[0], e = UP[2], det = a * e - b * c;
+      if (Math.abs(det) < 1e-9) break;
+      const px = ex / s, py = -ey / s;
+      t.tx += (px * e - b * py) / det; t.tz += (a * py - c * px) / det;
+    }
+    const r = bounds();
+    return !!r && r[0] >= mx && r[1] <= W - mx && r[2] >= mt0 && r[3] <= H - mb;
+  };
+  let lo = 1, hi = Math.max(50, 8 * Math.hypot(fb[1] - fb[0], fb[3] - fb[2]));
+  for (let i = 0; i < 36; i++) { const m = (lo + hi) / 2; if (fits(m)) hi = m; else lo = m; }
+  fits(hi);
+  const out = { tx: t.tx, ty: 0, tz: t.tz, dist: hi, yaw, pitch };
+  setupCam(cam);
+  return out;
+}
+let MAXD = Math.max(300, 1.2 * LEN);
+function camFor(s) {
+  const asp = W / Math.max(1, H), c = s.cam;
+  const pitch = c.pitch == null ? 0.95 : c.pitch, yaw = c.yaw == null ? 0 : c.yaw;
+  if (c.fit) { const f = fitCam(c.fit, yaw, pitch); MAXD = Math.max(MAXD, f.dist * 1.25); return f; }
+  const dist = c.dist ? c.dist * Math.max(1, 1.3 / asp) : Math.max(1.94 * c.span / asp, 2.25 * c.dz * Math.sin(pitch));
+  return { tx: c.x, ty: 0, tz: c.z, dist, yaw, pitch };
+}
+function update(dt, snap) {
+  const k = snap || RM ? 1 : 1 - Math.exp(-dt * 7), kc = snap || RM ? 1 : 1 - Math.exp(-dt * 4.5);
+  if (sweep) {
+    sweep.t += dt;
+    const u = clamp(sweep.t / sweep.T, 0, 1), e = u * u * (3 - 2 * u);
+    goal.tz = sweep.a + (sweep.b - sweep.a) * e;
+    if (u >= 1) sweep = null;
+  }
+  for (const key of CAMK) cam[key] += (goal[key] - cam[key]) * kc;
+  for (const arr of [boxes, lines, texts, fields]) for (const it of arr) it.a += (alphaOf(it) - it.a) * k;
+  if (!RM) FLOW.t += dt;
+  for (const f of fields) {
+    if (f.a < 0.01 && !snap) { f.cold = true; continue; }
+    const ph = Math.min(phaseOf(f.st), f.P.length - 1), P = f.P[ph], C = f.C[ph], cu = f.cur, rgb = f.rgb, kk = f.cold ? 1 : k;
+    f.cold = false;
+    if (f.flow) {
+      const L = FLOW.z1 - FLOW.z0;
+      for (let j = 0; j < f.n; j++) cu[3 * j + 2] = FLOW.z0 + ((FLOW.t * 22 + j * L / f.n) % L);
+    } else if (f.P.length > 1) {
+      for (let j = 0, m = f.n * 3; j < m; j++) cu[j] += (P[j] - cu[j]) * kk;
+    }
+    for (let j = 0; j < f.n; j++) {
+      const c = PAL[KEYS[C[j]]], q = 3 * j;
+      rgb[q] += (c[0] - rgb[q]) * kk; rgb[q + 1] += (c[1] - rgb[q + 1]) * kk; rgb[q + 2] += (c[2] - rgb[q + 2]) * kk;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------- 그리기 */
+const P8 = Array.from({ length: 8 }, () => [0, 0, 0, 0]);
+let picks = [], fpicks = [];
+function polyPath(q) { ctx.beginPath(); ctx.moveTo(q[0][0], q[0][1]); for (let i = 1; i < q.length; i++) ctx.lineTo(q[i][0], q[i][1]); ctx.closePath(); }
+function drawPlates() {
+  const prog = progress();
+  for (const s of PL) {
+    const C = [[PXL, s.z0], [PXR, s.z0], [PXR, s.z1], [PXL, s.z1]];
+    let ok = true;
+    for (let k = 0; k < 4; k++) { if (!proj(C[k][0], 0, C[k][1], T4)) { ok = false; break; } s.q[k][0] = T4[0]; s.q[k][1] = T4[1]; }
+    s.vis = ok; if (!ok) continue;
+    ctx.globalAlpha = 1; ctx.fillStyle = css(PAL[s.st === cur.st ? 'plateOn' : s.st < prog ? 'plateDone' : 'plate']);
+    polyPath(s.q); ctx.fill();
+  }
+}
+/* sz = 화면에서의 크기(px). 아주 작으면 윗면만 칠해서 전체 보기의 부담을 줄인다 */
+function drawBox(b, sz) {
+  if (sz < 1.2) return;
+  for (let i = 0; i < 8; i++) if (!proj(i & 1 ? b.x1 : b.x0, i & 2 ? b.y1 : b.y0, i & 4 ? b.z1 : b.z0, P8[i])) return;
+  const col = PAL[b.c], faces = [], lod = sz < 9;
+  if (EYE[1] > b.y1) faces.push([2, 3, 7, 6, 1]);
+  if (!lod || !faces.length) {
+    if (EYE[0] > b.x1) faces.push([1, 3, 7, 5, 0.84]); else if (EYE[0] < b.x0) faces.push([0, 2, 6, 4, 0.84]);
+    if (EYE[2] > b.z1) faces.push([4, 5, 7, 6, 0.7]); else if (EYE[2] < b.z0) faces.push([0, 1, 3, 2, 0.7]);
+  }
+  ctx.globalAlpha = b.a; ctx.lineWidth = 1; ctx.lineJoin = 'round';
+  const ink = PAL.ink, edge = 'rgba(' + ink[0] + ',' + ink[1] + ',' + ink[2] + ',0.16)';
+  const polys = !lod && b.meta && b.a > 0.5 ? [] : null;
+  for (const f of faces) {
+    ctx.fillStyle = rgbK(col[0] * f[4] | 0, col[1] * f[4] | 0, col[2] * f[4] | 0);
+    ctx.beginPath(); ctx.moveTo(P8[f[0]][0], P8[f[0]][1]);
+    for (let j = 1; j < 4; j++) ctx.lineTo(P8[f[j]][0], P8[f[j]][1]);
+    ctx.closePath(); ctx.fill(); if (!lod) { ctx.strokeStyle = edge; ctx.stroke(); }
+    if (polys) polys.push([0, 1, 2, 3].map((j) => [P8[f[j]][0], P8[f[j]][1]]));
+  }
+  if (polys) picks.push({ meta: b.meta, polys });
+  if (!lod && b.grid && EYE[1] > b.y1) drawGrid(b);
+}
+/* 원래 가중치 윗면의 모눈: 한 칸 = grid × grid 값(실제 비율). 칸이 너무 작게 보이면 그리지 않는다 */
+const GA = [0, 0, 0, 0], GB = [0, 0, 0, 0];
+function drawGrid(b) {
+  const nx = b.grid[0], nz = b.grid[1];
+  const cell = Math.hypot(P8[3][0] - P8[2][0], P8[3][1] - P8[2][1]) / nx;
+  const ga = clamp((cell - 3) / 4, 0, 1) * 0.36 * b.a;
+  if (ga < 0.02) return;
+  ctx.globalAlpha = ga; ctx.strokeStyle = css(PAL.onc); ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 1; i < nx; i++) {
+    const x = b.x0 + (b.x1 - b.x0) * i / nx;
+    if (!proj(x, b.y1, b.z0, GA) || !proj(x, b.y1, b.z1, GB)) continue;
+    ctx.moveTo(GA[0], GA[1]); ctx.lineTo(GB[0], GB[1]);
+  }
+  for (let j = 1; j < nz; j++) {
+    const z = b.z0 + (b.z1 - b.z0) * j / nz;
+    if (!proj(b.x0, b.y1, z, GA) || !proj(b.x1, b.y1, z, GB)) continue;
+    ctx.moveTo(GA[0], GA[1]); ctx.lineTo(GB[0], GB[1]);
+  }
+  ctx.stroke();
+}
+function drawField(f) {
+  if (!proj(f.c[0], f.c[1], f.c[2], T4)) return;
+  const px = f.size * T4[3];
+  const stride = !f.flow && px < 1.5 ? Math.min(12, Math.ceil((1.5 / px) * (1.5 / px))) : 1;
+  const grow = stride > 1 ? 1.3 : 1, cu = f.cur, rgb = f.rgb, n = f.n, sz = f.size;
+  ctx.globalAlpha = f.a;
+  for (let k = 0; k < n; k += stride) {
+    const q = 3 * k;
+    if (!proj(cu[q], cu[q + 1], cu[q + 2], T4)) continue;
+    const s = Math.max(f.flow ? 3 : 1.4, sz * T4[3]) * grow;
+    ctx.fillStyle = rgbK(rgb[q] & 0xFC, rgb[q + 1] & 0xFC, rgb[q + 2] & 0xFC);
+    ctx.fillRect(T4[0] - s / 2, T4[1] - s / 2, s, s);
+  }
+  if (f.meta && f.a > 0.5) fpicks.push(f);
+}
+/* 멀리 있는 선은 가늘게 그려 원래 가중치(파랑)를 덮지 않게 한다. fixw면 굵기 고정 */
+function drawLine(l, s) {
+  ctx.globalAlpha = l.a; ctx.strokeStyle = css(PAL[l.c]); ctx.lineWidth = l.fixw ? l.w : clamp(l.w * s / 6, 0.75, l.w); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath(); let on = false;
+  for (const p of l.pts) {
+    if (!proj(p[0], p[1], p[2], T4)) { on = false; continue; }
+    if (on) ctx.lineTo(T4[0], T4[1]); else { ctx.moveTo(T4[0], T4[1]); on = true; }
+  }
+  ctx.stroke();
+}
+function drawText(t) {
+  if (!proj(t.p[0], t.p[1], t.p[2], T4)) return;
+  if (T4[0] < -320 || T4[0] > W + 320 || T4[1] < -40 || T4[1] > H + 40) return;
+  let px = t.size * T4[3];
+  if (px < 7.5) return;
+  if (px > 30) px = 30;
+  ctx.globalAlpha = t.a;
+  ctx.font = (t.w || 500) + ' ' + px.toFixed(1) + 'px ' + (t.mono ? MONO : SANS);
+  ctx.textAlign = t.al || 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = css(PAL[t.c]); ctx.fillText(t.s, T4[0], T4[1]);
+}
+function drawTitles() {
+  const prog = progress();
+  ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
+  for (const s of PL) {
+    if (!proj(PXL - 1.0, 0, s.z0 + 1.8, T4)) continue;
+    if (T4[0] < -100 || T4[0] > W + 300 || T4[1] < -20 || T4[1] > H + 20) continue;
+    /* 전체 보기에서는 크게 다가가기 전까지 far 이름표만 남긴다(층 수가 적어 카메라가 가까워도 4개 안팎) */
+    const raw = 2.6 * T4[3], near = raw >= (cur.st === -1 ? 14 : 6);
+    if (!near && !s.far) continue;
+    const label = near ? s.name : s.far, px = near ? clamp(raw, 10, 17) : 11;
+    ctx.globalAlpha = s.st === cur.st || cur.st === -1 ? 1 : 0.75;
+    ctx.fillStyle = css(PAL[s.st === cur.st ? 'accent' : s.st < prog || cur.st === -1 ? 'ink' : 'ink2']);
+    ctx.font = '600 ' + px.toFixed(1) + 'px ' + SANS;
+    /* 오른쪽 맞춤 글자가 화면 왼쪽 밖으로 잘리지 않게 한다 */
+    ctx.fillText(label, Math.max(T4[0], ctx.measureText(label).width + 8), T4[1]);
+  }
+}
+function draw() {
+  setupCam();
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.globalAlpha = 1; ctx.fillStyle = css(PAL.bg); ctx.fillRect(0, 0, W, H);
+  drawPlates();
+  const list = [];
+  for (const b of boxes) if (b.a > 0.02 && inView(b.cx, b.cy, b.cz, b.rad)) list.push([T4[2] - b.y0 * 8, 0, b, b.rad * T4[3]]);
+  for (const f of fields) if (f.a > 0.02 && (f.flow || inView(f.c[0], f.c[1], f.c[2], f.rad))) list.push([f.flow ? -1e9 : T4[2] + 0.01 - f.c[1] * 8, 1, f]);
+  for (const l of lines) if (l.a > 0.02 && inView(l.mx, 0.3, l.mz, l.rad) && l.rad * T4[3] > 1.5) list.push([T4[2] + 2, 2, l, T4[3]]);
+  list.sort((p, q) => q[0] - p[0]);
+  picks = []; fpicks = [];
+  for (const e of list) { if (e[1] === 0) drawBox(e[2], e[3]); else if (e[1] === 1) drawField(e[2]); else drawLine(e[2], e[3]); }
+  for (const t of texts) if (t.a > 0.02) drawText(t);
+  drawTitles();
+  ctx.globalAlpha = 1;
+}
+let last = 0;
+function frame(t) {
+  const dt = Math.min(0.05, (t - last) / 1000 || 0.016); last = t;
+  if (!RM || quiet < 140) { update(dt, false); draw(); quiet++; if (ptr) hover(ptr[0], ptr[1]); }
+  requestAnimationFrame(frame);
+}
+
+/* ---------------------------------------------------------------- 가리키기 */
+function inPoly(x, y, q) {
+  let c = false;
+  for (let i = 0, j = q.length - 1; i < q.length; j = i++) {
+    if ((q[i][1] > y) !== (q[j][1] > y) && x < (q[j][0] - q[i][0]) * (y - q[i][1]) / (q[j][1] - q[i][1]) + q[i][0]) c = !c;
+  }
+  return c;
+}
+function plateAt(x, y) { for (const s of PL) if (s.vis && inPoly(x, y, s.q)) return s; return null; }
+function metaAt(x, y) {
+  for (let i = picks.length - 1; i >= 0; i--) for (const q of picks[i].polys) if (inPoly(x, y, q)) return picks[i].meta;
+  let best = null, bd = 60;
+  for (const f of fpicks) {
+    const cu = f.cur;
+    for (let k = 0; k < f.n; k++) {
+      if (!proj(cu[3 * k], cu[3 * k + 1], cu[3 * k + 2], T4)) continue;
+      const dx = T4[0] - x, dy = T4[1] - y, d = dx * dx + dy * dy;
+      if (d < bd) { bd = d; best = f.meta(k, phaseOf(f.st)); }
+    }
+  }
+  return best;
+}
+let ptr = null, drag = null;
+function hover(x, y) {
+  if (drag) { tip.hidden = true; return; }
+  const m = metaAt(x, y), p = m ? null : plateAt(x, y);
+  cv.classList.toggle('hot', !!m || !!(p && (p.st !== cur.st || p.L)));
+  if (!m) { tip.hidden = true; return; }
+  if (tip.textContent !== m) tip.textContent = m;
+  tip.hidden = false;
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  tip.style.left = clamp(x + 14, 8, W - tw - 8) + 'px';
+  tip.style.top = clamp(y - th - 12 < 8 ? y + 18 : y - th - 12, 8, H - th - 8) + 'px';
+}
+
+/* ---------------------------------------------------------------- 조작 */
+const ptrs = new Map();
+const local = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+cv.addEventListener('pointerdown', (e) => {
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (!drag) drag = { moved: 0, pan: e.shiftKey || e.button === 2 || e.button === 1, pinch: 0 };
+  if (ptrs.size === 2) { const v = [...ptrs.values()]; drag.pinch = Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]); }
+  cv.classList.add('drag'); tip.hidden = true;
+});
+cv.addEventListener('pointermove', (e) => {
+  const prev = ptrs.get(e.pointerId);
+  if (!prev) { ptr = local(e); hover(ptr[0], ptr[1]); return; }
+  const dx = e.clientX - prev[0], dy = e.clientY - prev[1];
+  ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (!drag) return;
+  drag.moved += Math.abs(dx) + Math.abs(dy);
+  if (ptrs.size === 2) {
+    const v = [...ptrs.values()], d = Math.hypot(v[0][0] - v[1][0], v[0][1] - v[1][1]);
+    if (drag.pinch > 0 && d > 0) { goal.dist = clamp(goal.dist * drag.pinch / d, 10, MAXD); cam.dist = goal.dist; }
+    drag.pinch = d;
+  } else if (drag.pan) {
+    const k = cam.dist / F, gl = Math.hypot(FW[0], FW[2]) || 1, gx = FW[0] / gl, gz = FW[2] / gl;
+    sweep = null;
+    goal.tx += (-RT[0] * dx + gx * dy * 1.5) * k; goal.tz += (-RT[2] * dx + gz * dy * 1.5) * k;
+    cam.tx = goal.tx; cam.tz = goal.tz;
+  } else {
+    goal.yaw -= dx * 0.006; goal.pitch = clamp(goal.pitch + dy * 0.005, 0.18, 1.48);
+    cam.yaw = goal.yaw; cam.pitch = goal.pitch;
+  }
+  wake();
+});
+function endPtr(e) {
+  const had = ptrs.delete(e.pointerId);
+  if (ptrs.size > 0) { if (drag) drag.pinch = 0; return; }
+  const d = drag; drag = null; cv.classList.remove('drag');
+  if (had && d && d.moved < 6 && e.type === 'pointerup') {
+    const p = local(e), s = plateAt(p[0], p[1]);
+    if (s && !metaAt(p[0], p[1])) {
+      if (s.st !== cur.st && ST[s.st].first >= 0) go(ST[s.st].first);
+      if (s.L) { sweep = null; goal.tz = (s.z0 + s.z1) / 2; wake(); }
+    }
+  }
+}
+cv.addEventListener('pointerup', endPtr);
+cv.addEventListener('pointercancel', endPtr);
+cv.addEventListener('pointerleave', () => { ptr = null; tip.hidden = true; });
+cv.addEventListener('contextmenu', (e) => e.preventDefault());
+cv.addEventListener('wheel', (e) => { e.preventDefault(); goal.dist = clamp(goal.dist * Math.exp(e.deltaY * 0.0012), 10, MAXD); wake(); }, { passive: false });
+document.addEventListener('keydown', (e) => {
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { go(stepIdx + 1); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { go(stepIdx - 1); e.preventDefault(); }
+  else if (e.key === 'Home') { go(0); e.preventDefault(); }
+  else if (e.key === 'End') { go(STEPS.length - 1); e.preventDefault(); }
+});
+
+/* ---------------------------------------------------------------- 레일: 구조도, 단계 글, 어댑터 (모두 구성에서 만든다) */
+function railHTML() {
+  const blk = (id, go, cls, label, num) => '<button type="button" class="blk' + (cls ? ' ' + cls : '') + '" id="' + id + '" data-go="' + go + '">' + esc(label) + ' <span>' + esc(num) + '</span></button>';
+  const tag = (id, go, list) => (list.length ? '<button type="button" class="lora" id="' + id + '" data-go="' + go + '">+ LoRA ' + esc(list.join(' ')) + '</button>' : '');
+  const hw = fmt(V) + ' × ' + fmt(HID);
+  let s = blk('r-in', 'input', '', '입력 토큰', fmt(NT)) + blk('r-emb', 'emb', 'frz', '토큰 임베딩', hw);
+  if (LEARNED) s += blk('r-pos', 'emb', 'frz', '위치 임베딩', fmt(MODEL.maxPos) + ' × ' + fmt(HID));
+  s += '<div class="stack"><button type="button" class="tag" id="r-xN" data-go="layers">층 × ' + NL + '</button>';
+  s += '<div class="res">' + blk('r-n1', 'attn1', 'frz', NORM, fmt(COUNTS.layer.norm1))
+    + '<div class="pair">' + blk('r-att', 'attn2', 'frz', '마스크드 멀티헤드 어텐션', 'q k v o') + tag('r-l1', 'lora', at) + '</div>'
+    + blk('r-add1', 'attn2', 'add', '더하기', '잔차 연결') + '</div>';
+  s += '<div class="res">' + blk('r-n2', 'mlp1', 'frz', NORM, fmt(COUNTS.layer.norm2))
+    + '<div class="pair">' + blk('r-ffn', 'mlp1', 'frz', '피드포워드', MLPK.join(' ')) + tag('r-l2', CU && CU.sec === 3 ? 'lora' : 'mlp1', mt) + '</div>'
+    + blk('r-add2', 'mlp1', 'add', '더하기', '잔차 연결') + '</div>';
+  s += '<p class="sum">한 층: ' + WORD + ' ' + fmt(COUNTS.layer.total) + (FT ? ' · 학습 ' + fmt(COUNTS.lora.perLayer) : '') + '</p></div>';
+  s += blk('r-fn', 'out', 'frz', NORM, fmt(COUNTS.normF)) + blk('r-head', 'out', 'frz', 'LM head · Linear', MODEL.tied ? '공유(tied)' : hw);
+  s += blk('r-soft', 'soft', '', 'Softmax', '다음 토큰');
+  if (RS) s += blk('r-res', 'results', '', RESULTS.title || '결과', '지표 ' + RESULTS.metrics.length + '개');
+  s += '<p class="total">' + WORD + ' <b>' + fmt(COUNTS.total) + '</b>' + (FT ? ' · 학습하는 값 <b>' + fmt(COUNTS.lora.total) + '</b>' : '') + '</p>';
+  return s;
+}
+function pickHTML() {
+  let s = '<span class="key"><i style="background: var(--c-w)"></i>' + WORD + ' <small>모눈 한 칸 = ' + GC + '개</small></span>'
+    + '<span class="key"><i style="background: var(--c-act)"></i>흐르는 값</span>';
+  if (FT && CONDS.length > 1) {
+    s += '<span class="lab">LoRA</span>';
+    CONDS.forEach((c, k) => { s += '<button type="button" id="c' + k + '" data-k="' + k + '" aria-pressed="false"><i style="background: var(--c-' + c.color + ')"></i>' + esc(c.label) + '</button>'; });
+  } else if (FT) s += '<span class="key"><i style="background: var(--lora)"></i>LoRA</span>';
+  return s;
+}
+$('#eyebrow').textContent = FT ? 'LoRA 미세조정 · 모델 구조 시각화' : '모델 구조 시각화';
+$('#h1').textContent = MODEL.name + ' 구조 흐름도';
+$('#archname').textContent = MODEL.name;
+$('#arch').innerHTML = railHTML();
+$('#pick').innerHTML = pickHTML();
+if (window.matchMedia && matchMedia('(max-width: 820px)').matches) $('#archbox').open = false;   /* 좁은 화면에서는 구조도를 접어 둔다 */
+const rows = Array.from(document.querySelectorAll('#arch [data-go]'));
+rows.forEach((el) => el.addEventListener('click', () => go(idxOf(el.dataset.go))));
+function renderRail() {
+  const s = STEPS[stepIdx];
+  rows.forEach((el) => { if (s.row.indexOf(el.id) >= 0) el.setAttribute('aria-current', 'step'); else el.removeAttribute('aria-current'); });
+  $('#where').textContent = s.st === -1 ? '전체 구조' : ST[s.st].name;
+  $('#stitle').textContent = s.t;
+  $('#sbody').innerHTML = s.h;
+  $('#ssrc').textContent = s.src ? '출처: ' + s.src : '';
+  $('#count').textContent = (stepIdx + 1) + ' / ' + STEPS.length;
+  $('#prev').disabled = stepIdx === 0;
+  const nx = $('#next'); nx.disabled = stepIdx === STEPS.length - 1;
+  nx.textContent = stepIdx === 0 ? '시작' : '다음';
+}
+function go(i, snap) {
+  stepIdx = clamp(i | 0, 0, STEPS.length - 1);
+  const s = STEPS[stepIdx];
+  cur.st = s.st; cur.ph = s.ph || 0;
+  Object.assign(goal, camFor(s));
+  sweep = null;
+  if (s.sweep) { if (RM) goal.tz = s.sweep[1]; else sweep = { t: -SWD, a: s.sweep[0], b: s.sweep[1], T: s.sweep[2] }; }
+  renderRail();
+  if (snap) update(0, true);
+  try { history.replaceState(null, '', '#s' + stepIdx); } catch (err) { /* 주소를 못 바꿔도 그림은 그대로 둔다 */ }
+  wake();
+}
+/* 조건 고르기. snap이면 바로 끝 상태로(검사용) */
+function setCond(c, snap) {
+  cond = clamp(c | 0, 0, CONDS.length - 1); PAL.lora = PAL[CONDS[cond].color];
+  document.querySelectorAll('#pick button[data-k]').forEach((b) => b.setAttribute('aria-pressed', +b.dataset.k === cond ? 'true' : 'false'));
+  $('#arch').classList.toggle('nolora', !CONDS[cond].lora);
+  document.documentElement.style.setProperty('--lora', 'var(--c-' + CONDS[cond].color + ')');
+  if (snap) update(0, true);
+  wake();
+}
+document.querySelectorAll('#pick button[data-k]').forEach((b) => b.addEventListener('click', () => setCond(+b.dataset.k)));
+$('#prev').addEventListener('click', () => go(stepIdx - 1));
+$('#next').addEventListener('click', () => go(stepIdx + 1));
+$('#reset').addEventListener('click', () => { go(stepIdx); });
+window.addEventListener('hashchange', () => { const m = /^#s(\d+)$/.exec(location.hash); if (m && +m[1] !== stepIdx) go(+m[1]); });
+
+/* ---------------------------------------------------------------- 시작 */
+function resize() {
+  const r = stage.getBoundingClientRect();
+  W = Math.max(50, r.width); H = Math.max(50, r.height); DPR = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  const tz = goal.tz; Object.assign(goal, camFor(STEPS[stepIdx])); if (STEPS[stepIdx].sweep) goal.tz = tz;
+  wake();
+  draw();   /* 크기를 바꾸면 캔버스가 지워지므로 바로 다시 그린다 */
+}
+readPal();
+setCond(cond);
+new ResizeObserver(resize).observe(stage);
+new MutationObserver(() => { readPal(); wake(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] });
+if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readPal(); wake(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(wake);
+resize();
+const m0 = /^#s(\d+)$/.exec(location.hash);
+go(m0 ? +m0[1] : 0, true);
+requestAnimationFrame(frame);
+/* 검사용 손잡이: 스크립트는 이것만 쓴다 */
+window.__mf = {
+  go, setCond, update, draw,
+  steps: STEPS.length,
+  sweepSeconds: (i) => { const s = STEPS[i]; return s && s.sweep && !RM ? SWD + s.sweep[2] + 1.0 : 0; },
+  counts: COUNTS,
+  conds: CONDS.length,
+  stats: () => ({ boxes: boxes.length, lines: lines.length, texts: texts.length, fields: fields.length }),
+  keys: STEPS.map((s) => s.key),
+};
+})();
+</script>
